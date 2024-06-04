@@ -82,7 +82,7 @@ function toggleAll() {
       </ul>
       <div class="btn-container">
         <button class="btn__submit" @click="toggleAll">
-          {{ limit === LIMIT_CONST ? "Показать" : "Скрыть" }} больше вакансий
+          {{ limit === LIMIT_CONST ? "Показать больше вакансий" : "Скрыть" }}
         </button>
       </div>
     </div>

@@ -32,7 +32,7 @@ const schema = yup.object({
   checkboxPolitics: yup.boolean().oneOf([true]).required(),
 });
 
-const { values, defineField, errors, handleSubmit } = useForm<{
+const { defineField, errors, handleSubmit, isSubmitting } = useForm<{
   city: string;
   name: string;
   vacation: string;
@@ -61,8 +61,29 @@ const [checkboxPolitics] = defineField("checkboxPolitics", {
   validateOnBlur: false,
 });
 
-const formHandler = handleSubmit((values) => {
-  console.log("@", values);
+const isSubmitted = ref(false);
+const isErrorFormSubmit = ref<string | null>(null);
+
+const formHandler = handleSubmit(async (values, { resetForm }) => {
+  // console.log("@", values);
+  const { city, name, phone, vacation } = values;
+
+  try {
+    await $fetch("/api/contact-feedback", {
+      method: "POST",
+      body: {
+        city,
+        name,
+        phone,
+        vacation,
+      },
+    });
+    resetForm();
+    isSubmitted.value = true;
+  } catch (error) {
+    isErrorFormSubmit.value =
+      error instanceof Error ? error.message : JSON.stringify(error);
+  }
 });
 
 // const formHandler = async () => {
@@ -122,7 +143,15 @@ const formHandler = handleSubmit((values) => {
       <p class="contacts-item">+7 (912) 213-34-34</p>
       <p class="contacts-item">bond@santur.ru</p>
     </div>
-    <div>
+    <div class="success-view" v-if="isSubmitted">
+      <p class="text-success">Ваш запрос успешно отправлен.</p>
+      <div class="success-view__btn-container">
+        <button type="button" @click="isSubmitted = false" class="btn__submit">
+          ОТПРАВИТЬ ЕЩЕ РАЗ
+        </button>
+      </div>
+    </div>
+    <div v-else>
       <form @submit.prevent="formHandler">
         <div class="forms__input">
           <div>
@@ -191,6 +220,7 @@ const formHandler = handleSubmit((values) => {
                 type="checkbox"
                 id="allow__personal-info"
                 class="checkbox"
+                required
                 name="checkboxPolitics"
                 v-model="checkboxPolitics"
               />
@@ -200,8 +230,9 @@ const formHandler = handleSubmit((values) => {
               </div>
             </label>
           </div>
-          {{ errors }}
-          <button type="submit" class="btn__submit">ОТПРАВИТЬ</button>
+          <button type="submit" :disabled="isSubmitting" class="btn__submit">
+            ОТПРАВИТЬ
+          </button>
         </div>
       </form>
     </div>
@@ -212,5 +243,23 @@ const formHandler = handleSubmit((values) => {
 .error-message {
   font-size: 12px;
   color: red;
+}
+
+.success-view {
+  padding: 60px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.text-success {
+  font-size: var(--mainSize);
+  color: rgb(10, 151, 46);
+  text-align: center;
+  font-weight: 600;
+}
+
+.success-view__btn-container {
+  text-align: center;
 }
 </style>
