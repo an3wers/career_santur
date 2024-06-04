@@ -6,15 +6,18 @@
 }
 
 .page {
+  position: relative;
   background-color: #fafafa;
   font-family: "OpenSansHebrew-Bold", sans-serif;
+  z-index: 1;
 }
 
 .header__block {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  margin-block-start: 30px;
+  padding-top: 30px;
+  /* margin-block-start: 30px; */
   gap: 50px;
 }
 
@@ -137,6 +140,18 @@
   content: "";
   z-index: -1;
 }
+
+/* .about__integers .about__integers_b {
+  border-radius: 125px 0%;
+  border: 5px solid #c3d6f0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 100px;
+  content: "";
+  z-index: 1;
+} */
 
 h2 {
   text-align: center;

@@ -121,7 +121,7 @@ function toggleAll() {
 }
 
 .vac-logo {
-  width: 120px;
+  width: 100px;
 }
 
 .btn-container {

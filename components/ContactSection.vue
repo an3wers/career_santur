@@ -2,11 +2,6 @@
 import { useForm } from "vee-validate";
 import * as yup from "yup";
 
-// const city = ref("");
-// const name = ref("");
-// const phone = ref("");
-// const vacancy = ref("");
-
 /*
 
 struct sVacantionFeedBack
@@ -25,10 +20,10 @@ struct sVacantionFeedBack
 */
 
 const schema = yup.object({
-  city: yup.string().required("Обязательное поле"),
-  name: yup.string().required("Обязательное поле"),
-  vacation: yup.string().required("Обязательное поле"),
-  phone: yup.string().required("Обязательное поле"),
+  city: yup.string().required("Обязательное поле").trim(),
+  name: yup.string().required("Обязательное поле").trim(),
+  vacation: yup.string().required("Обязательное поле").trim(),
+  phone: yup.string().required("Обязательное поле").trim(),
   checkboxPolitics: yup.boolean().oneOf([true]).required(),
 });
 
@@ -65,7 +60,6 @@ const isSubmitted = ref(false);
 const isErrorFormSubmit = ref<string | null>(null);
 
 const formHandler = handleSubmit(async (values, { resetForm }) => {
-  // console.log("@", values);
   const { city, name, phone, vacation } = values;
 
   try {
@@ -157,7 +151,7 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
           <div>
             <label for="city" class="visually-hidden">Поле город</label>
             <input
-              v-model="city"
+              v-model.trim="city"
               type="text"
               placeholder="Город"
               id="city"
@@ -170,7 +164,7 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
           <div>
             <label for="name" class="visually-hidden">Поле фио</label>
             <input
-              v-model="name"
+              v-model.trim="name"
               type="text"
               placeholder="ФИО"
               id="name"
@@ -186,7 +180,7 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
             >
             <input
               type="text"
-              v-model="vacation"
+              v-model.trim="vacation"
               placeholder="Кем хотите работать"
               id="vacancy"
               class="form__vacancy form__input"
@@ -199,7 +193,7 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
             <label for="phone" class="visually-hidden">Поле телефон</label>
             <input
               type="tel"
-              v-model="phone"
+              v-model.trim="phone"
               placeholder="Телефон"
               id="phone"
               class="form__tel form__input"

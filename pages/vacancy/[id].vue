@@ -39,6 +39,7 @@ const htmlDecoding = (string: string) => {
       </button>
       <h1 v-html="htmlDecoding(data.data.title)"></h1>
       <div class="page-descr" v-html="htmlDecoding(data.data.content)"></div>
+      <VacancyForm :vacation="htmlDecoding(data.data.title)" />
     </article>
   </div>
 </template>
