@@ -1,0 +1,7 @@
+User-Agent: *
+Disallow: /nuxt
+Disallow: */?
+Disallow: */*?
+Allow: /*/*.js             
+Allow: /*/*.css
+host: https://career.santur.ru

@@ -3,7 +3,7 @@
 <template>
   <article class="about">
     <h1 class="main__header">МЫ ФОРМИРУЕМ САНТЕХНИЧЕСКИЙ РЫНОК</h1>
-    <NuxtLink class="link" href="#">вакансии</NuxtLink>
+    <NuxtLink class="link" href="#vacancy">вакансии</NuxtLink>
     <div class="about__integers">
       <h3 class="header__integers">О НАС В ЦИФРАХ</h3>
       <div class="block__integers">

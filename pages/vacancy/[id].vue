@@ -31,15 +31,19 @@ const htmlDecoding = (string: string) => {
 
 <template>
   <div class="page-container">
+    <Head>
+      <Title>{{ data?.data?.title }}</Title>
+      <Meta name="description" :content="data?.data?.title" />
+    </Head>
     <!-- Back button -->
     <article v-if="data">
       <button @click="$router.push('/')" class="back-button">
         <img width="100px" src="/images/arrow-back.png" />
         <span>Ко всем вакансиям</span>
       </button>
-      <h1 v-html="htmlDecoding(data.data.title)"></h1>
-      <div class="page-descr" v-html="htmlDecoding(data.data.content)"></div>
-      <VacancyForm :vacation="htmlDecoding(data.data.title)" />
+      <h1 v-html="htmlDecoding(data?.data?.title)"></h1>
+      <div class="page-descr" v-html="htmlDecoding(data?.data?.content)"></div>
+      <VacancyForm :vacation="htmlDecoding(data?.data?.title)" />
     </article>
   </div>
 </template>

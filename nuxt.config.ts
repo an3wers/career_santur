@@ -4,9 +4,12 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.png" }],
       htmlAttrs: {
         lang: "ru",
       },
+      charset: "utf-8",
+      viewport: "width=device-width, initial-scale=1",
     },
   },
   ssr: true,

@@ -153,4 +153,10 @@ const formHandler = handleSubmit(async (value, { resetForm }) => {
 .success-view__btn-container {
   text-align: center;
 }
+
+@media (width < 850px) {
+  .input-info {
+    grid-column: 1 / 1;
+  }
+}
 </style>

@@ -131,11 +131,21 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
     </div>
     <div class="contacts">
       <p class="contacts-item">Алена:</p>
-      <p class="contacts-item">+7 (982) 611-79-00</p>
-      <p class="contacts-item">kovalenko@santur.ru</p>
+      <p class="contacts-item">
+        <a href="tel:79826117900">+7 (982) 611-79-00</a>
+      </p>
+      <p class="contacts-item">
+        <a href="mailto:kovalenko@santur.ru" target="_blank"
+          >kovalenko@santur.ru</a
+        >
+      </p>
       <p class="contacts-item">Анастасия:</p>
-      <p class="contacts-item">+7 (912) 213-34-34</p>
-      <p class="contacts-item">bond@santur.ru</p>
+      <p class="contacts-item">
+        <a href="tel:79122133434">+7 (912) 213-34-34</a>
+      </p>
+      <p class="contacts-item">
+        <a href="mailto:bond@santur.ru" target="_blank">bond@santur.ru</a>
+      </p>
     </div>
     <div class="success-view" v-if="isSubmitted">
       <p class="text-success">Ваш запрос успешно отправлен.</p>
@@ -220,7 +230,12 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
               />
               <div>
                 Соглашаюсь на обработку своих персональных данных в соответствии
-                <a class="agree__link" href="#" target="_blank">с политикой </a>
+                <NuxtLink
+                  class="agree__link"
+                  to="https://santur.ru/politika"
+                  target="_blank"
+                  >с политикой
+                </NuxtLink>
               </div>
             </label>
           </div>
