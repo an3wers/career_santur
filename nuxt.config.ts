@@ -19,7 +19,7 @@ export default defineNuxtConfig({
       apiBase:
         process.env.NODE_ENV === "development"
           ? "http://localhost:3000/"
-          : "https://isantur.ru/",
+          : "https://career.santur.ru/",
     },
   },
 
