@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const errorMessage = "При отправки формы произошла ошибка";
   const body = await readBody(event);
-  const recievers = ["artemzh@santur.ru"];
+  const recievers = ["kovalenko@santur.ru", "bond@santur.ru"];
 
   try {
     const { apiBase } = useRuntimeConfig().public;
