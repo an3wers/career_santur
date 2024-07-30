@@ -130,27 +130,18 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
       <h2 class="contacts__header">СВЯЖИТЕСЬ С НАМИ</h2>
     </div>
     <div class="contacts">
-      <p class="contacts-item">Алена:</p>
+      <p class="contacts-item">Чистякова Вероника:</p>
       <p class="contacts-item">
-        <a href="tel:79826117900">+7 (982) 611-79-00</a>
+        <a href="tel:79530521920">+7 (953) 052-19-20</a>
       </p>
       <p class="contacts-item">
-        <a href="mailto:kovalenko@santur.ru" target="_blank"
-          >kovalenko@santur.ru</a
-        >
-      </p>
-      <p class="contacts-item">Анастасия:</p>
-      <p class="contacts-item">
-        <a href="tel:79122133434">+7 (912) 213-34-34</a>
-      </p>
-      <p class="contacts-item">
-        <a href="mailto:bond@santur.ru" target="_blank">bond@santur.ru</a>
+        <a href="mailto:chvv@santur.ru" target="_blank">chvv@santur.ru</a>
       </p>
     </div>
-    <div class="success-view" v-if="isSubmitted">
+    <div v-if="isSubmitted" class="success-view">
       <p class="text-success">Ваш запрос успешно отправлен.</p>
       <div class="success-view__btn-container">
-        <button type="button" @click="isSubmitted = false" class="btn__submit">
+        <button type="button" class="btn__submit" @click="isSubmitted = false">
           ОТПРАВИТЬ ЕЩЕ РАЗ
         </button>
       </div>
@@ -161,26 +152,26 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
           <div>
             <label for="city" class="visually-hidden">Поле город</label>
             <input
+              id="city"
               v-model.trim="city"
               type="text"
               placeholder="Город"
-              id="city"
               class="form__city form__input"
             />
-            <small class="error-message" v-if="errors.city">{{
+            <small v-if="errors.city" class="error-message">{{
               errors.city
             }}</small>
           </div>
           <div>
             <label for="name" class="visually-hidden">Поле фио</label>
             <input
+              id="name"
               v-model.trim="name"
               type="text"
               placeholder="ФИО"
-              id="name"
               class="form__name form__input"
             />
-            <small class="error-message" v-if="errors.name">{{
+            <small v-if="errors.name" class="error-message">{{
               errors.name
             }}</small>
           </div>
@@ -189,10 +180,10 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
               >Поле кем хотите работать</label
             >
             <input
+              id="vacancy"
               type="text"
               v-model.trim="vacation"
               placeholder="Кем хотите работать"
-              id="vacancy"
               class="form__vacancy form__input"
             />
             <small class="error-message" v-if="errors.vacation">{{
