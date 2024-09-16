@@ -130,9 +130,10 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
       <h2 class="contacts__header">СВЯЖИТЕСЬ С НАМИ</h2>
     </div>
     <div class="contacts">
-      <p class="contacts-item">Чистякова Вероника:</p>
+      <p class="contacts-item">Вероника:</p>
       <p class="contacts-item">
-        <a href="tel:79530521920">+7 (953) 052-19-20</a>
+        <a href="tel:73432700404">+7 (343) 270-04-04</a><br />
+        <span class="text-cuption">(доб. 5151)</span>
       </p>
       <p class="contacts-item">
         <a href="mailto:chvv@santur.ru" target="_blank">chvv@santur.ru</a>
@@ -257,6 +258,10 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
   color: rgb(10, 151, 46);
   text-align: center;
   font-weight: 600;
+}
+
+.text-cuption {
+  font-size: 0.75em;
 }
 
 .success-view__btn-container {

@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
 const CAT_ID = 28;
 const PAGE = 1;
@@ -8,21 +9,35 @@ const { data } = await useFetch<Record<string, any>>("apissz/GetPosts", {
   query: { page: PAGE, categoryId: CAT_ID, app: "santur" },
 });
 
-// console.log("@ 1", document.querySelector(".header"));
-
-// onMounted(() => {
-//   console.log("@ 2", document.querySelector(".header"));
-// });
-
 const currentCity = ref<"ekb" | "tagil">("ekb");
 const limit = ref(LIMIT_CONST);
-const limitedData = computed(() => {
+
+const currentCityTransform = computed(() => {
+  return currentCity.value === "ekb" ? "Екатеринбург" : "Нижний Тагил";
+});
+
+const filteredByCity = computed(() => {
+  const resItems: any[] | undefined = [];
+
   if (data.value && data.value?.data?.items?.length > 0) {
-    return data.value.data.items.filter(
-      (_: any, index: number) => index <= limit.value
-    );
+    data.value.data.items.forEach((item: any) => {
+      const foundFieldCity = item.extFields.find(
+        (f: any) => f.title === "Город"
+      );
+
+      if (foundFieldCity.value === currentCityTransform.value) {
+        resItems.push(item);
+      }
+    });
   }
-  return [];
+
+  return resItems;
+});
+
+const limitedData = computed(() => {
+  return filteredByCity.value.filter(
+    (_: unknown, index: number) => index <= limit.value
+  );
 });
 
 function toggleAll() {
@@ -46,7 +61,6 @@ function toggleAll() {
         </button>
         <img
           style="cursor: pointer"
-          @click="currentCity = 'ekb'"
           :src="
             currentCity === 'ekb'
               ? '/images/ekb.svg'
@@ -54,15 +68,15 @@ function toggleAll() {
           "
           alt="карта Екатеринбурга"
           class="ekb__map"
+          @click="currentCity = 'ekb'"
         />
       </div>
       <div class="maps__img">
-        <button @click="currentCity = 'tagil'" class="maps__btn">
+        <button class="maps__btn" @click="currentCity = 'tagil'">
           <h2 class="maps__header">НИЖНИЙ ТАГИЛ</h2>
         </button>
         <img
           style="cursor: pointer"
-          @click="currentCity = 'tagil'"
           :src="
             currentCity === 'tagil'
               ? '/images/tag.svg'
@@ -70,17 +84,18 @@ function toggleAll() {
           "
           alt="карта Тагила"
           class="tag__map"
+          @click="currentCity = 'tagil'"
         />
       </div>
     </div>
     <div class="list-container">
       <ul class="vac-list">
-        <li class="vac-item" v-for="item in limitedData" :key="item.id">
+        <li v-for="item in limitedData" :key="item.id" class="vac-item">
           <NuxtLink :to="`/vacancy/${item.id}`">{{ item.title }}</NuxtLink>
           <img class="vac-logo" :src="'/images/vac_ekb.png'" />
         </li>
       </ul>
-      <div class="btn-container">
+      <div v-if="limitedData.length > LIMIT_CONST" class="btn-container">
         <button class="btn__submit" @click="toggleAll">
           {{ limit === LIMIT_CONST ? "Показать больше вакансий" : "Скрыть" }}
         </button>
