@@ -3,6 +3,7 @@
 
 :root {
   --mainSize: clamp(1rem, calc(0.7rem + 1.5vw), 2.5rem);
+  --labelSize: clamp(1rem, calc(0.7rem + 1.5vw), 1.75rem);
 }
 
 .page {
@@ -555,7 +556,7 @@ h4 {
   min-height: 300px;
 }
 
-.cards__goals-front-back{
+.cards__goals-front-back {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -576,32 +577,30 @@ h4 {
   width: 100%;
   height: 100%;
   background-color: #254776;
-  
+
   border-radius: 18px;
   padding: 15px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
- 
 
   flex-grow: 1;
 
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-
 }
 
 .cards__goals-item {
   background-color: #254776;
-  
+
   border-radius: 18px;
   padding: 15px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
- 
+
   min-width: 375px;
   max-width: 400px;
   min-height: 300px;
@@ -620,7 +619,6 @@ h4 {
   flex-direction: column;
   justify-content: center;
   align-items: center;
- 
 
   flex-grow: 1;
 
@@ -632,7 +630,7 @@ h4 {
 .cards__goals-item-back > .goals__text-wrapper > .goals__text {
   font-size: 20px;
   color: #254776;
-} 
+}
 
 .img__goals {
   position: absolute;
@@ -669,30 +667,32 @@ h4 {
 
 .contacts {
   margin-block-start: 50px;
-  display: grid;
-  grid-template-columns: 300px 300px 300px;
-  grid-column-gap: 20px;
-  grid-row-gap: 20px;
+  display: flex;
+  gap: 40px;
+  /* grid-template-columns: 300px 300px 300px; */
+  /* grid-column-gap: 20px; */
+  /* grid-row-gap: 20px; */
   justify-content: center;
 }
 
 .contacts-item {
-  font-size: 30px;
+  font-size: 40px;
   color: #254776;
   font-weight: 700;
 }
 
 .forms__input {
   display: grid;
-  grid-template-columns: 1fr 3fr;
+  grid-template-columns: 1fr 1fr;
   gap: 40px;
   margin: auto;
-  max-width: 1240px;
+  max-width: 1000px;
   margin-block-start: 50px;
 }
 
 .form__input {
-  font-size: 32px;
+  font-size: 18px;
+  padding: 12px;
   border-radius: 10px;
   border: 3px solid rgba(125, 125, 125, 0.5);
   width: 100%;
@@ -713,7 +713,7 @@ h4 {
 }
 
 .agree-text {
-  font-size: var(--mainSize);
+  font-size: var(--labelSize);
   font-weight: 400;
   color: #7d7d7d;
   max-width: 1000px;
@@ -881,7 +881,7 @@ h4 {
   }
 
   .contacts {
-    grid-template-columns: 300px;
+    /* grid-template-columns: 300px; */
   }
 
   .contacts-item:nth-child(4) {
@@ -904,8 +904,21 @@ h4 {
 }
 
 @media (width < 850px) {
+  .contacts {
+    gap: 32px;
+  }
+
+  .contacts-item {
+    font-size: 32px;
+  }
+
   .forms__input {
+    gap: 20px;
     grid-template-columns: 1fr;
+  }
+
+  .forms__input > div {
+    grid-column: span 2;
   }
 
   .footer {

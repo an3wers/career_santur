@@ -12,6 +12,7 @@ export default defineNuxtConfig({
       viewport: "width=device-width, initial-scale=1",
     },
   },
+
   ssr: true,
 
   runtimeConfig: {
@@ -41,4 +42,5 @@ export default defineNuxtConfig({
   },
 
   modules: ["@nuxt/eslint"],
+  compatibilityDate: "2025-01-30",
 });
