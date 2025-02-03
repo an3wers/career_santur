@@ -206,9 +206,14 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
           </div>
           <div>
             <label for="email" class="visually-hidden">Поле email</label>
-            <input type="email" v-model.trim="email" placeholder="Эл. почта""
-            id="email" class="form__tel form__input" />
-            <small class="error-message" v-if="errors.email">{{
+            <input
+              id="email"
+              v-model.trim="email"
+              type="email"
+              class="form__tel form__input"
+              placeholder="Эл. почта"
+            />
+            <small v-if="errors.email" class="error-message">{{
               errors.email
             }}</small>
           </div>
@@ -216,13 +221,13 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
           <div>
             <label for="phone" class="visually-hidden">Поле телефон</label>
             <input
-              type="tel"
-              v-model.trim="phone"
-              placeholder="Телефон"
               id="phone"
+              v-model.trim="phone"
+              type="tel"
+              placeholder="Телефон"
               class="form__tel form__input"
             />
-            <small class="error-message" v-if="errors.phone">{{
+            <small v-if="errors.phone" class="error-message">{{
               errors.phone
             }}</small>
           </div>
@@ -232,12 +237,12 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
             >
             <input
               id="vacancy"
-              type="text"
               v-model.trim="vacation"
+              type="text"
               placeholder="Желаемая должность"
               class="form__vacancy form__input"
             />
-            <small class="error-message" v-if="errors.vacation">{{
+            <small v-if="errors.vacation" class="error-message">{{
               errors.vacation
             }}</small>
           </div>
@@ -245,17 +250,17 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
         <div class="checkboxes">
           <div class="checkboxes-item">
             <label for="allow__spam" class="agree-text">
-              <input type="checkbox" id="allow__spam" class="checkbox" />
+              <input id="allow__spam" type="checkbox" class="checkbox" />
               Присылать оповещения о новых вакансиях
             </label>
             <label for="allow__personal-info" class="agree-text">
               <input
-                type="checkbox"
                 id="allow__personal-info"
+                v-model="checkboxPolitics"
+                type="checkbox"
                 class="checkbox"
                 required
                 name="checkboxPolitics"
-                v-model="checkboxPolitics"
               />
               <div>
                 Соглашаюсь на обработку своих персональных данных в соответствии

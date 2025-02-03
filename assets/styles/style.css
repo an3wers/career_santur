@@ -925,3 +925,8 @@ h4 {
     grid-template-columns: 1fr;
   }
 }
+
+noscript > div > img {
+  position: absolute;
+  left: -9999px;
+}

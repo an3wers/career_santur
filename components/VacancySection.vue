@@ -56,7 +56,7 @@ function toggleAll() {
     </div>
     <div class="maps">
       <div class="maps__img">
-        <button @click="currentCity = 'ekb'" class="maps__btn">
+        <button class="maps__btn" @click="currentCity = 'ekb'">
           <h2 class="maps__header">ЕКАТЕРИНБУРГ</h2>
         </button>
         <img

@@ -13,11 +13,11 @@
         </NuxtLink>
       </div>
       <nav class="navigation">
-        <NuxtLink class="nav__link" to="/#goals">Ценности</NuxtLink>
-        <NuxtLink class="nav__link" to="/#conditions">Условия</NuxtLink>
-        <NuxtLink class="nav__link" to="/#vacancy">Вакансии</NuxtLink>
-        <NuxtLink class="nav__link" to="/#contacts">Анкета</NuxtLink>
-        <NuxtLink class="nav__link" to="/#contacts">Контакты</NuxtLink>
+        <a class="nav__link" href="/#goals">Ценности</a>
+        <a class="nav__link" href="/#conditions">Условия</a>
+        <a class="nav__link" href="/#vacancy">Вакансии</a>
+        <a class="nav__link" href="/#contacts">Анкета</a>
+        <a class="nav__link" href="/#contacts">Контакты</a>
       </nav>
     </div>
     <img

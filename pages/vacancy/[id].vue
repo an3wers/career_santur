@@ -37,7 +37,7 @@ const htmlDecoding = (string: string) => {
     </Head>
     <!-- Back button -->
     <article v-if="data">
-      <button @click="$router.push('/')" class="back-button">
+      <button class="back-button" @click="$router.push('/')">
         <img width="100px" src="/images/arrow-back.png" />
         <span>Ко всем вакансиям</span>
       </button>

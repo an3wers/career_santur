@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <article class="article__conditions">
+  <article id="conditions" class="article__conditions">
     <div id="conditions" class="conditions__header-wraper">
       <h2 class="conditions__header">УСЛОВИЯ РАБОТЫ</h2>
     </div>

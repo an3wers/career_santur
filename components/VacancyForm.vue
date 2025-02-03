@@ -62,10 +62,10 @@ const formHandler = handleSubmit(async (value, { resetForm }) => {
 
 <template>
   <div>
-    <div class="success-view" v-if="isSubmitted">
+    <div v-if="isSubmitted" class="success-view">
       <p class="text-success">Ваш запрос успешно отправлен.</p>
       <div class="success-view__btn-container">
-        <button type="button" @click="isSubmitted = false" class="btn__submit">
+        <button class="btn__submit" type="button" @click="isSubmitted = false">
           ОТПРАВИТЬ ЕЩЕ РАЗ
         </button>
       </div>
@@ -76,39 +76,39 @@ const formHandler = handleSubmit(async (value, { resetForm }) => {
         <div>
           <label for="name" class="visually-hidden">Поле фио</label>
           <input
+            id="name"
             v-model.trim="name"
             type="text"
             placeholder="ФИО"
-            id="name"
             class="form__name form__input"
           />
-          <small class="error-message" v-if="errors.name">{{
+          <small v-if="errors.name" class="error-message">{{
             errors.name
           }}</small>
         </div>
         <div>
           <label for="phone" class="visually-hidden">Поле телефон</label>
           <input
-            type="tel"
-            v-model.trim="phone"
-            placeholder="Телефон"
             id="phone"
+            v-model.trim="phone"
+            type="tel"
+            placeholder="Телефон"
             class="form__tel form__input"
           />
-          <small class="error-message" v-if="errors.phone">{{
+          <small v-if="errors.phone" class="error-message">{{
             errors.phone
           }}</small>
         </div>
         <div class="input-info">
           <label for="info" class="visually-hidden">Поле телефон</label>
           <textarea
+            id="info"
             v-model.trim="info"
             rows="5"
             placeholder="Дополнительная информация"
-            id="info"
             class="form__info form__input"
           />
-          <small class="error-message" v-if="errors.info">{{
+          <small v-if="errors.info" class="error-message">{{
             errors.info
           }}</small>
         </div>

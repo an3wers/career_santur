@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <article class="about">
+  <article id="about" class="about">
     <h1 class="main__header">МЫ ФОРМИРУЕМ САНТЕХНИЧЕСКИЙ РЫНОК</h1>
     <NuxtLink class="link" href="#vacancy">вакансии</NuxtLink>
     <div class="about__integers">
