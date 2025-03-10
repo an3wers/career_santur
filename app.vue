@@ -47,9 +47,7 @@ nuxtApp.hook("page:finish", () => {
 </script>
 
 <template>
-  <div class="page">
-    <AppHeader />
+  <NuxtLayout>
     <NuxtPage :page-key="(route) => route.fullPath" />
-    <AppFooter />
-  </div>
+  </NuxtLayout>
 </template>
