@@ -9,7 +9,8 @@ export default defineNuxtConfig({
         lang: "ru",
       },
       charset: "utf-8",
-      viewport: "width=device-width, initial-scale=1",
+      viewport:
+        "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no",
     },
   },
 
