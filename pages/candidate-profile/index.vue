@@ -79,7 +79,7 @@ const schema = computed(() =>
   )
 );
 
-const { errors, defineField, handleSubmit, isSubmitting } = useForm({
+const { errors, defineField, values, handleSubmit, isSubmitting } = useForm({
   validationSchema: schema,
   initialValues: {
     family: [
@@ -94,6 +94,8 @@ const { errors, defineField, handleSubmit, isSubmitting } = useForm({
     maritalStatus: "",
   },
 });
+
+type FormValues = typeof values;
 
 const [vacancy] = defineField("vacancy");
 const [fullname] = defineField("fullname");
@@ -135,10 +137,68 @@ const [stateOfficialDetail] = defineField("stateOfficialDetail");
 
 const [family] = defineField("family");
 
+const submitStatus = ref<"idle" | "pending" | "success" | "error">("idle");
+
+const hasFieldsErrors = computed(() => Object.keys(errors.value).length > 0);
+
 const handleForm = handleSubmit(async (value, { resetForm }) => {
-  console.log({ form: value });
-  resetForm();
+  try {
+    submitStatus.value = "pending";
+    console.log({ form: value });
+
+    await $fetch("https://46.48.32.34:10101/apiVacancy/StoreChel", {
+      method: "POST",
+      body: createFormData(value),
+    });
+    // await new Promise((res) => setTimeout(res, 600));
+
+    resetForm();
+    submitStatus.value = "success";
+  } catch (error) {
+    console.error(error);
+    submitStatus.value = "error";
+  }
 });
+
+function createFormData(rawValues: FormValues) {
+  const { family, ...other } = rawValues;
+  const formData = new FormData();
+
+  Object.entries(other).forEach(([k, v]) => {
+    formData.append(k, v?.toString() ?? "");
+  });
+
+  family?.forEach((el) => {
+    formData.append("family", JSON.stringify(el));
+  });
+
+  formData.append(
+    "isChangedLastName",
+    isChangedLastName.value ? "true" : "false"
+  );
+
+  formData.append(
+    "isAddressSameRegistration",
+    isAddressSameRegistration.value ? "true" : "false"
+  );
+
+  formData.append(
+    "hasCriminalRecord",
+    hasCriminalRecord.value ? "true" : "false"
+  );
+
+  formData.append(
+    "hasLegalEntityHead",
+    hasLegalEntityHead.value ? "true" : "false"
+  );
+
+  formData.append(
+    "hasStateOfficialRelative",
+    hasStateOfficialRelative.value ? "true" : "false"
+  );
+
+  return formData;
+}
 </script>
 
 <template>
@@ -148,501 +208,577 @@ const handleForm = handleSubmit(async (value, { resetForm }) => {
         <img src="~/assets/images/logo-santur.svg" alt="logo" />
       </div>
       <h1>Анкета кандидата</h1>
-      <form class="form" @submit.prevent="handleForm">
-        <div class="field">
-          <label class="field__label" for="vacancy"
-            >Интересующая вакансия</label
+      <div v-if="submitStatus === 'success'" class="success-message">
+        <i class="success-message__icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
           >
-          <input
-            id="vacancy"
-            v-model="vacancy"
-            name="vacancy"
-            type="text"
-            class="field__input"
-            :class="{ error: errors.vacancy }"
-          />
-          <div v-if="errors.vacancy" class="field__error-text">
-            {{ errors.vacancy }}
+            <!-- Icon from Tabler Icons by Paweł Kuna - https://github.com/tabler/tabler-icons/blob/master/LICENSE -->
+            <path
+              fill="currentColor"
+              d="M17 3.34a10 10 0 1 1-14.995 8.984L2 12l.005-.324A10 10 0 0 1 17 3.34m-1.293 5.953a1 1 0 0 0-1.32-.083l-.094.083L11 12.585l-1.293-1.292l-.094-.083a1 1 0 0 0-1.403 1.403l.083.094l2 2l.094.083a1 1 0 0 0 1.226 0l.094-.083l4-4l.083-.094a1 1 0 0 0-.083-1.32"
+            />
+          </svg>
+        </i>
+        <p>Спасибо, анкета успешно отправлена!</p>
+      </div>
+      <template v-if="submitStatus !== 'success'">
+        <form class="form" @submit.prevent="handleForm">
+          <div class="field field_required">
+            <label class="field__label" for="vacancy"
+              >Интересующая вакансия</label
+            >
+            <input
+              id="vacancy"
+              v-model="vacancy"
+              name="vacancy"
+              type="text"
+              class="field__input"
+              :class="{ error: errors.vacancy }"
+            />
+            <div v-if="errors.vacancy" class="field__error-text">
+              {{ errors.vacancy }}
+            </div>
           </div>
-        </div>
-        <div class="field">
-          <label class="field__label" for="fullname">ФИО</label>
-          <input
-            id="fullname"
-            v-model="fullname"
-            name="fullname"
-            type="text"
-            class="field__input"
-            :class="{ error: errors.fullname }"
-          />
-          <div v-if="errors.fullname" class="field__error-text">
-            {{ errors.fullname }}
+          <div class="field field_required">
+            <label class="field__label" for="fullname">ФИО</label>
+            <input
+              id="fullname"
+              v-model="fullname"
+              name="fullname"
+              type="text"
+              class="field__input"
+              :class="{ error: errors.fullname }"
+            />
+            <div v-if="errors.fullname" class="field__error-text">
+              {{ errors.fullname }}
+            </div>
           </div>
-        </div>
-        <div class="field-group-v">
+          <div class="field-group-v">
+            <div class="field_checkbox">
+              <input
+                id="isChangedLastName"
+                v-model="isChangedLastName"
+                type="checkbox"
+                name="isChangedLastName"
+              />
+              <label class="field__label" for="isChangedLastName"
+                >Меняли ли вы фамилию?</label
+              >
+            </div>
+
+            <div v-show="isChangedLastName" class="field">
+              <span class="field__hint">Укажите прежнюю. Сколько раз?</span>
+              <input
+                id="previousLastNames"
+                v-model="previousLastNames"
+                type="text"
+                name="previousLastNames"
+                class="field__input"
+                :class="{ error: errors.previousLastNames }"
+              />
+              <div v-if="errors.previousLastNames" class="field__error-text">
+                {{ errors.previousLastNames }}
+              </div>
+            </div>
+          </div>
+
+          <div class="field field_required w-1-3">
+            <label class="field__label">Серия и номер паспорта</label>
+            <span class="field__hint">Формат: 4444 333333</span>
+            <input
+              id="passportSerial"
+              v-model="passportSerial"
+              name="passportSerial"
+              class="field__input"
+              :class="{ error: errors.passportSerial }"
+            />
+            <div v-if="errors.passportSerial" class="field__error-text">
+              {{ errors.passportSerial }}
+            </div>
+          </div>
+          <div class="field field_required">
+            <label class="field__label">Паспорт выдан (когда, кем)</label>
+            <input
+              id="passportRegisterDetail"
+              v-model="passportRegisterDetail"
+              name="passportRegisterDetail"
+              class="field__input"
+              :class="{ error: errors.passportRegisterDetail }"
+            />
+            <div v-if="errors.passportRegisterDetail" class="field__error-text">
+              {{ errors.passportRegisterDetail }}
+            </div>
+          </div>
+          <div class="field-group-h">
+            <div class="field field_required w-1-3">
+              <label class="field__label" for="birthDate">Дата рождения</label>
+              <input
+                id="birthDate"
+                v-model="birthDate"
+                name="birthDate"
+                type="date"
+                class="field__input"
+                :class="{ error: errors.birthDate }"
+              />
+              <div v-if="errors.birthDate" class="field__error-text">
+                {{ errors.birthDate }}
+              </div>
+            </div>
+            <div class="field field_required">
+              <label class="field__label" for="birthPlace"
+                >Место рождения</label
+              >
+              <input
+                id="birthPlace"
+                v-model="birthPlace"
+                name="birthPlace"
+                type="text"
+                class="field__input"
+                :class="{ error: errors.birthPlace }"
+              />
+              <div v-if="errors.birthPlace" class="field__error-text">
+                {{ errors.birthPlace }}
+              </div>
+            </div>
+          </div>
+          <div class="field field_required">
+            <label class="field__label" for="registrationAddress"
+              >Адрес регистрации</label
+            >
+            <input
+              id="registrationAddress"
+              v-model="registrationAddress"
+              name="registrationAddress"
+              type="text"
+              class="field__input"
+              :class="{ error: errors.registrationAddress }"
+            />
+            <div v-if="errors.registrationAddress" class="field__error-text">
+              {{ errors.registrationAddress }}
+            </div>
+          </div>
           <div class="field_checkbox">
             <input
-              id="isChangedLastName"
-              v-model="isChangedLastName"
+              id="isAddressSameRegistration"
+              v-model="isAddressSameRegistration"
               type="checkbox"
-              name="isChangedLastName"
+              name="isAddressSameRegistration"
             />
-            <label class="field__label" for="isChangedLastName"
-              >Меняли ли вы фамилию?</label
+            <label class="field__label" for="isAddressSameRegistration"
+              >Адрес проживания совпадает с местом регистрации?</label
             >
           </div>
-
-          <div v-show="isChangedLastName" class="field">
-            <span class="field__hint">Укажите прежнюю. Сколько раз?</span>
+          <div v-show="!isAddressSameRegistration" class="field field_required">
+            <label class="field__label" for="address">Адрес проживания</label>
             <input
-              id="previousLastNames"
-              v-model="previousLastNames"
-              type="text"
-              name="previousLastNames"
-              class="field__input"
-              :class="{ error: errors.previousLastNames }"
-            />
-            <div v-if="errors.previousLastNames" class="field__error-text">
-              {{ errors.previousLastNames }}
-            </div>
-          </div>
-        </div>
-
-        <div class="field w-1-3">
-          <label class="field__label">Серия и номер паспорта</label>
-          <input
-            id="passportSerial"
-            v-model="passportSerial"
-            name="passportSerial"
-            class="field__input"
-            :class="{ error: errors.passportSerial }"
-          />
-          <div v-if="errors.passportSerial" class="field__error-text">
-            {{ errors.passportSerial }}
-          </div>
-        </div>
-        <div class="field">
-          <label class="field__label">Паспорт выдан (когда, кем)</label>
-          <input
-            id="passportRegisterDetail"
-            v-model="passportRegisterDetail"
-            name="passportRegisterDetail"
-            class="field__input"
-            :class="{ error: errors.passportRegisterDetail }"
-          />
-          <div v-if="errors.passportRegisterDetail" class="field__error-text">
-            {{ errors.passportRegisterDetail }}
-          </div>
-        </div>
-        <div class="field-group-h">
-          <div class="field w-1-3">
-            <label class="field__label" for="birthDate">Дата рождения</label>
-            <input
-              id="birthDate"
-              v-model="birthDate"
-              name="birthDate"
-              type="date"
-              class="field__input"
-              :class="{ error: errors.birthDate }"
-            />
-            <div v-if="errors.birthDate" class="field__error-text">
-              {{ errors.birthDate }}
-            </div>
-          </div>
-          <div class="field">
-            <label class="field__label" for="birthPlace">Место рождения</label>
-            <input
-              id="birthPlace"
-              v-model="birthPlace"
-              name="birthPlace"
+              id="address"
+              v-model="address"
+              name="address"
               type="text"
               class="field__input"
-              :class="{ error: errors.birthPlace }"
+              :class="{ error: errors.address }"
             />
-            <div v-if="errors.birthPlace" class="field__error-text">
-              {{ errors.birthPlace }}
+            <div v-if="errors.address" class="field__error-text">
+              {{ errors.address }}
             </div>
           </div>
-        </div>
-        <div class="field">
-          <label class="field__label" for="registrationAddress"
-            >Адрес регистрации</label
-          >
-          <input
-            id="registrationAddress"
-            v-model="registrationAddress"
-            name="registrationAddress"
-            type="text"
-            class="field__input"
-            :class="{ error: errors.registrationAddress }"
-          />
-          <div v-if="errors.registrationAddress" class="field__error-text">
-            {{ errors.registrationAddress }}
-          </div>
-        </div>
-        <div class="field_checkbox">
-          <input
-            id="isAddressSameRegistration"
-            v-model="isAddressSameRegistration"
-            type="checkbox"
-            name="isAddressSameRegistration"
-          />
-          <label class="field__label" for="isAddressSameRegistration"
-            >Адрес проживания совпадает с местом регистрации?</label
-          >
-        </div>
-        <div v-show="!isAddressSameRegistration" class="field">
-          <label class="field__label" for="address">Адрес проживания</label>
-          <input
-            id="address"
-            v-model="address"
-            name="address"
-            type="text"
-            class="field__input"
-            :class="{ error: errors.address }"
-          />
-          <div v-if="errors.address" class="field__error-text">
-            {{ errors.address }}
-          </div>
-        </div>
-        <div class="field w-1-3">
-          <label class="field__label" for="maritalStatus"
-            >Семейное положение</label
-          >
-          <select
-            id="maritalStatus"
-            v-model="maritalStatus"
-            class="field__input"
-            :class="{ error: errors.maritalStatus }"
-          >
-            <option disabled value="">Выберите вариант</option>
-            <option>холост</option>
-            <option>не замужем</option>
-            <option>женат</option>
-            <option>замужем</option>
-          </select>
-          <div v-if="errors.maritalStatus" class="field__error-text">
-            {{ errors.maritalStatus }}
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="children" class="field__label">Дети, возраст детей</label>
-          <input
-            id="children"
-            v-model="children"
-            type="text"
-            name="children"
-            class="field__input"
-            :class="{ error: errors.children }"
-          />
-          <div v-if="errors.children" class="field__error-text">
-            {{ errors.children }}
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="livingConditions" class="field__label"
-            >Условия проживания</label
-          >
-          <span class="field__hint"
-            >Собственное жилье, с родителями, снимаю, общежитие, другое
-          </span>
-          <input
-            id="livingConditions"
-            v-model="livingConditions"
-            type="text"
-            name="livingConditions"
-            class="field__input"
-            :class="{ error: errors.livingConditions }"
-          />
-          <div v-if="errors.livingConditions" class="field__error-text">
-            {{ errors.livingConditions }}
-          </div>
-        </div>
-
-        <div class="field-group-h">
-          <div class="field">
-            <label class="field__label" for="phone">Телефон</label>
-            <input
-              id="phone"
-              v-model="phone"
-              name="phone"
-              type="tel"
-              class="field__input"
-              :class="{ error: errors.phone }"
-            />
-            <div v-if="errors.phone" class="field__error-text">
-              {{ errors.phone }}
-            </div>
-          </div>
-          <div class="field">
-            <label class="field__label" for="email">Email</label>
-            <input
-              id="email"
-              v-model="email"
-              name="email"
-              type="email"
-              class="field__input"
-              :class="{ error: errors.email }"
-            />
-            <div v-if="errors.email" class="field__error-text">
-              {{ errors.email }}
-            </div>
-          </div>
-        </div>
-
-        <div class="field">
-          <label class="field__label" for="militaryDetail"
-            >Воинская служба</label
-          >
-          <span class="field__hint">Служил/ не служил, № воинской части</span>
-          <input
-            id="militaryDetail"
-            v-model="militaryDetail"
-            type="text"
-            name="militaryDetail"
-            class="field__input"
-            :class="{ error: errors.militaryDetail }"
-          />
-          <div v-if="errors.militaryDetail" class="field__error-text">
-            {{ errors.militaryDetail }}
-          </div>
-        </div>
-
-        <div class="field-group-v">
-          <div class="field_checkbox">
-            <input
-              id="hasCriminalRecord"
-              v-model="hasCriminalRecord"
-              type="checkbox"
-              name="hasCriminalRecord"
-            />
-            <label class="field__label" for="hasCriminalRecord"
-              >Привлекались ли вы к уголовной ответственности?</label
+          <div class="field field_required w-1-3">
+            <label class="field__label" for="maritalStatus"
+              >Семейное положение</label
             >
-          </div>
-
-          <div v-show="hasCriminalRecord" class="field">
-            <span class="field__hint">Укажите по какой статье, когда?</span>
-            <input
-              id="criminalDetail"
-              v-model="criminalDetail"
-              type="text"
-              name="criminalDetail"
+            <select
+              id="maritalStatus"
+              v-model="maritalStatus"
               class="field__input"
-              :class="{ error: errors.criminalDetail }"
-            />
-            <div v-if="errors.criminalDetail" class="field__error-text">
-              {{ errors.criminalDetail }}
+              :class="{ error: errors.maritalStatus }"
+            >
+              <option disabled value="">Выберите вариант</option>
+              <option>холост</option>
+              <option>не замужем</option>
+              <option>женат</option>
+              <option>замужем</option>
+            </select>
+            <div v-if="errors.maritalStatus" class="field__error-text">
+              {{ errors.maritalStatus }}
             </div>
           </div>
-        </div>
 
-        <div class="field_checkbox">
-          <input
-            id="hasDebts"
-            v-model="hasDebts"
-            type="checkbox"
-            name="hasDebts"
-          />
-          <label class="field__label" for="hasDebts">
-            Имеются ли у вас задолженности по кредитам, алиментам, квартплате?
-          </label>
-        </div>
-
-        <div class="field-group-v">
-          <div class="field_checkbox">
+          <div class="field">
+            <label for="children" class="field__label"
+              >Дети, возраст детей</label
+            >
             <input
-              id="hasLegalEntityHead"
-              v-model="hasLegalEntityHead"
-              type="checkbox"
-              name="hasLegalEntityHead"
-            />
-            <label class="field__label" for="hasLegalEntityHead">
-              Являетесь (являлись) ли вы руководителем (учредителем)
-              юридического лица?
-            </label>
-          </div>
-          <div v-show="hasLegalEntityHead" class="field w-1-3">
-            <span class="field__hint">Укажите ИНН</span>
-            <input
-              id="legalEntityHeadDetail"
-              v-model="legalEntityHeadDetail"
+              id="children"
+              v-model="children"
               type="text"
-              name="legalEntityHeadDetail"
+              name="children"
               class="field__input"
-              :class="{ error: errors.legalEntityHeadDetail }"
+              :class="{ error: errors.children }"
             />
-            <div v-if="errors.legalEntityHeadDetail" class="field__error-text">
-              {{ errors.legalEntityHeadDetail }}
+            <div v-if="errors.children" class="field__error-text">
+              {{ errors.children }}
             </div>
           </div>
-        </div>
 
-        <div class="field-group-v">
-          <div class="field_checkbox">
-            <input
-              id="hasStateOfficialRelative"
-              v-model="hasStateOfficialRelative"
-              type="checkbox"
-              name="hasStateOfficialRelative"
-            />
-            <label class="field__label" for="hasStateOfficialRelative">
-              Является ли кто-то из ваших близких родственником Государственным
-              Должностным Лицом?
-            </label>
-          </div>
-          <div v-show="hasStateOfficialRelative" class="field">
+          <div class="field field_required">
+            <label for="livingConditions" class="field__label"
+              >Условия проживания</label
+            >
             <span class="field__hint"
-              >Укажите ФИО, степень родства, должность</span
-            >
+              >Собственное жилье, с родителями, снимаю, общежитие, другое
+            </span>
             <input
-              id="stateOfficialDetail"
-              v-model="stateOfficialDetail"
+              id="livingConditions"
+              v-model="livingConditions"
               type="text"
-              name="stateOfficialDetail"
+              name="livingConditions"
               class="field__input"
-              :class="{ error: errors.stateOfficialDetail }"
+              :class="{ error: errors.livingConditions }"
             />
-            <div v-if="errors.stateOfficialDetail" class="field__error-text">
-              {{ errors.stateOfficialDetail }}
+            <div v-if="errors.livingConditions" class="field__error-text">
+              {{ errors.livingConditions }}
             </div>
           </div>
-        </div>
 
-        <div class="field">
-          <label class="field__label" style="margin-bottom: 0.5rem"
-            >Сведения о семье (ваши ближайшие родственники):</label
-          >
+          <div class="field-group-h">
+            <div class="field field_required">
+              <label class="field__label" for="phone">Телефон</label>
+              <input
+                id="phone"
+                v-model="phone"
+                v-maska="'+7 (###) ###-##-##'"
+                placeholder="+7 (___) ___-__-__"
+                name="phone"
+                type="tel"
+                class="field__input"
+                :class="{ error: errors.phone }"
+              />
+              <div v-if="errors.phone" class="field__error-text">
+                {{ errors.phone }}
+              </div>
+            </div>
+            <div class="field field_required">
+              <label class="field__label" for="email">Email</label>
+              <input
+                id="email"
+                v-model="email"
+                name="email"
+                type="email"
+                class="field__input"
+                :class="{ error: errors.email }"
+              />
+              <div v-if="errors.email" class="field__error-text">
+                {{ errors.email }}
+              </div>
+            </div>
+          </div>
 
-          <FieldArray v-slot="{ fields, push, remove }" name="family">
-            <div
-              v-for="(field, idx) in fields"
-              :key="field.key"
-              class="field-group-v field-card"
+          <div class="field">
+            <label class="field__label" for="militaryDetail"
+              >Воинская служба</label
             >
-              <div class="field-group-h">
-                <div class="field">
-                  <label :for="`degreeOfKinship_${idx}`" class="field__label"
-                    >Степень родства</label
-                  >
-                  <input
-                    :id="`degreeOfKinship_${idx}`"
-                    v-model="family![idx].degreeOfKinship"
-                    :name="`degreeOfKinship_${idx}`"
-                    class="field__input"
-                  />
-                </div>
-                <div class="field">
-                  <label :for="`fullname_${idx}`" class="field__label"
-                    >ФИО</label
-                  >
-                  <input
-                    :id="`fullname_${idx}`"
-                    v-model="family![idx].fullname"
-                    :name="`fullname_${idx}`"
-                    class="field__input"
-                  />
-                </div>
-              </div>
+            <span class="field__hint">Служил/ не служил, № воинской части</span>
+            <input
+              id="militaryDetail"
+              v-model="militaryDetail"
+              type="text"
+              name="militaryDetail"
+              class="field__input"
+              :class="{ error: errors.militaryDetail }"
+            />
+            <div v-if="errors.militaryDetail" class="field__error-text">
+              {{ errors.militaryDetail }}
+            </div>
+          </div>
 
-              <div class="field-group-h">
-                <div class="field">
-                  <label :for="`birthDate_${idx}`" class="field__label"
-                    >Дата рождения</label
-                  >
-                  <input
-                    :id="`birthDate_${idx}`"
-                    v-model="family![idx].birthDate"
-                    :name="`birthDate_${idx}`"
-                    type="date"
-                    class="field__input"
-                  />
-                </div>
-                <div class="field">
-                  <label :for="`phone_${idx}`" class="field__label"
-                    >Телефон</label
-                  >
-                  <input
-                    :id="`phone_${idx}`"
-                    v-model="family![idx].phone"
-                    :name="`phone_${idx}`"
-                    type="tel"
-                    class="field__input"
-                  />
-                </div>
-              </div>
+          <div class="field-group-v">
+            <div class="field_checkbox">
+              <input
+                id="hasCriminalRecord"
+                v-model="hasCriminalRecord"
+                type="checkbox"
+                name="hasCriminalRecord"
+              />
+              <label class="field__label" for="hasCriminalRecord"
+                >Привлекались ли вы к уголовной ответственности?</label
+              >
+            </div>
 
-              <div class="field">
-                <label :for="`jobtitle_${idx}`" class="field__label"
-                  >Место работы и должность</label
-                >
-                <input
-                  :id="`jobtitle_${idx}`"
-                  v-model="family![idx].jobtitle"
-                  :name="`jobtitle_${idx}`"
-                  type="text"
-                  class="field__input"
-                />
+            <div v-show="hasCriminalRecord" class="field">
+              <span class="field__hint">Укажите по какой статье, когда?</span>
+              <input
+                id="criminalDetail"
+                v-model="criminalDetail"
+                type="text"
+                name="criminalDetail"
+                class="field__input"
+                :class="{ error: errors.criminalDetail }"
+              />
+              <div v-if="errors.criminalDetail" class="field__error-text">
+                {{ errors.criminalDetail }}
               </div>
-              <div v-if="idx !== 0">
+            </div>
+          </div>
+
+          <div class="field_checkbox">
+            <input
+              id="hasDebts"
+              v-model="hasDebts"
+              type="checkbox"
+              name="hasDebts"
+            />
+            <label class="field__label" for="hasDebts">
+              Имеются ли у вас задолженности по кредитам, алиментам, квартплате?
+            </label>
+          </div>
+
+          <div class="field-group-v">
+            <div class="field_checkbox">
+              <input
+                id="hasLegalEntityHead"
+                v-model="hasLegalEntityHead"
+                type="checkbox"
+                name="hasLegalEntityHead"
+              />
+              <label class="field__label" for="hasLegalEntityHead">
+                Являетесь (являлись) ли вы руководителем (учредителем)
+                юридического лица?
+              </label>
+            </div>
+            <div v-show="hasLegalEntityHead" class="field w-1-3">
+              <span class="field__hint">Укажите ИНН</span>
+              <input
+                id="legalEntityHeadDetail"
+                v-model="legalEntityHeadDetail"
+                type="text"
+                name="legalEntityHeadDetail"
+                class="field__input"
+                :class="{ error: errors.legalEntityHeadDetail }"
+              />
+              <div
+                v-if="errors.legalEntityHeadDetail"
+                class="field__error-text"
+              >
+                {{ errors.legalEntityHeadDetail }}
+              </div>
+            </div>
+          </div>
+
+          <div class="field-group-v">
+            <div class="field_checkbox">
+              <input
+                id="hasStateOfficialRelative"
+                v-model="hasStateOfficialRelative"
+                type="checkbox"
+                name="hasStateOfficialRelative"
+              />
+              <label class="field__label" for="hasStateOfficialRelative">
+                Является ли кто-то из ваших близких родственником
+                Государственным Должностным Лицом?
+              </label>
+            </div>
+            <div v-show="hasStateOfficialRelative" class="field">
+              <span class="field__hint"
+                >Укажите ФИО, степень родства, должность</span
+              >
+              <input
+                id="stateOfficialDetail"
+                v-model="stateOfficialDetail"
+                type="text"
+                name="stateOfficialDetail"
+                class="field__input"
+                :class="{ error: errors.stateOfficialDetail }"
+              />
+              <div v-if="errors.stateOfficialDetail" class="field__error-text">
+                {{ errors.stateOfficialDetail }}
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field__label" style="margin-bottom: 0.5rem"
+              >Сведения о семье (ваши ближайшие родственники):</label
+            >
+
+            <FieldArray v-slot="{ fields, push, remove }" name="family">
+              <div
+                v-for="(field, idx) in fields"
+                :key="field.key"
+                class="field-group-v field-card"
+              >
+                <div class="field-group-h">
+                  <div class="field">
+                    <label :for="`degreeOfKinship_${idx}`" class="field__label"
+                      >Степень родства</label
+                    >
+                    <input
+                      :id="`degreeOfKinship_${idx}`"
+                      v-model="family![idx].degreeOfKinship"
+                      :name="`degreeOfKinship_${idx}`"
+                      class="field__input"
+                    />
+                  </div>
+                  <div class="field">
+                    <label :for="`fullname_${idx}`" class="field__label"
+                      >ФИО</label
+                    >
+                    <input
+                      :id="`fullname_${idx}`"
+                      v-model="family![idx].fullname"
+                      :name="`fullname_${idx}`"
+                      class="field__input"
+                    />
+                  </div>
+                </div>
+
+                <div class="field-group-h">
+                  <div class="field">
+                    <label :for="`birthDate_${idx}`" class="field__label"
+                      >Дата рождения</label
+                    >
+                    <input
+                      :id="`birthDate_${idx}`"
+                      v-model="family![idx].birthDate"
+                      :name="`birthDate_${idx}`"
+                      type="date"
+                      class="field__input"
+                    />
+                  </div>
+                  <div class="field">
+                    <label :for="`phone_${idx}`" class="field__label"
+                      >Телефон</label
+                    >
+                    <input
+                      :id="`phone_${idx}`"
+                      v-model="family![idx].phone"
+                      :name="`phone_${idx}`"
+                      type="tel"
+                      class="field__input"
+                    />
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label :for="`jobtitle_${idx}`" class="field__label"
+                    >Место работы и должность</label
+                  >
+                  <input
+                    :id="`jobtitle_${idx}`"
+                    v-model="family![idx].jobtitle"
+                    :name="`jobtitle_${idx}`"
+                    type="text"
+                    class="field__input"
+                  />
+                </div>
+                <div v-if="idx !== 0">
+                  <button
+                    type="button"
+                    class="btn btn_sm btn_warning"
+                    @click="remove(idx)"
+                  >
+                    Удалить
+                  </button>
+                </div>
+              </div>
+              <div>
                 <button
                   type="button"
-                  class="btn btn_sm btn_warning"
-                  @click="remove(idx)"
+                  :disabled="Boolean(family!.length > 3)"
+                  class="btn btn_sm"
+                  @click="
+                    push({
+                      degreeOfKinship: '',
+                      fullname: '',
+                      jobtitle: '',
+                      birthDate: '',
+                      phone: '',
+                    })
+                  "
                 >
-                  Удалить
+                  Добавить
                 </button>
               </div>
-            </div>
-            <div>
-              <button
-                type="button"
-                :disabled="Boolean(family!.length > 3)"
-                class="btn btn_sm"
-                @click="
-                  push({
-                    degreeOfKinship: '',
-                    fullname: '',
-                    jobtitle: '',
-                    birthDate: '',
-                    phone: '',
-                  })
-                "
+            </FieldArray>
+          </div>
+
+          <div class="field_checkbox">
+            <input
+              id="applyPolicy"
+              v-model="applyPolicy"
+              type="checkbox"
+              name="applyPolicy"
+            />
+            <label class="field__label" for="applyPolicy">
+              Я даю согласие на
+              <nuxt-link
+                target="_blank"
+                to="https://santur.ru/personal-information"
+                >обработку моих персональных</nuxt-link
               >
-                Добавить
-              </button>
-            </div>
-          </FieldArray>
-        </div>
-
-        <div class="field_checkbox">
-          <input
-            id="applyPolicy"
-            v-model="applyPolicy"
-            type="checkbox"
-            name="applyPolicy"
-          />
-          <label class="field__label" for="applyPolicy">
-            Я даю согласие на
-            <nuxt-link to="#">обработку моих персональных данных</nuxt-link>.
-          </label>
-        </div>
-
-        <div>
-          <p v-show="Object.keys(errors).length > 0" class="form-error-text">
-            Пожалуйста, проверьте корректность введенных данных
-          </p>
-          <button
-            type="submit"
-            :disabled="isSubmitting || !applyPolicy"
-            class="btn"
+              данных. С
+              <nuxt-link target="_blank" to="https://santur.ru/politika"
+                >Положением в отношении обработки персональных данных</nuxt-link
+              >
+              ознакомлен(-а).
+            </label>
+          </div>
+          <div
+            v-show="hasFieldsErrors || submitStatus === 'error'"
+            class="error-message"
           >
-            Отправить
-          </button>
-        </div>
-      </form>
+            <i class="error-message__icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill="currentColor"
+                  d="M12 1.67c.955 0 1.845.467 2.39 1.247l.105.16l8.114 13.548a2.914 2.914 0 0 1-2.307 4.363l-.195.008H3.882a2.914 2.914 0 0 1-2.582-4.2l.099-.185l8.11-13.538A2.91 2.91 0 0 1 12 1.67M12.01 15l-.127.007a1 1 0 0 0 0 1.986L12 17l.127-.007a1 1 0 0 0 0-1.986zM12 8a1 1 0 0 0-.993.883L11 9v4l.007.117a1 1 0 0 0 1.986 0L13 13V9l-.007-.117A1 1 0 0 0 12 8"
+                />
+              </svg>
+            </i>
+            <p v-if="hasFieldsErrors">
+              Пожалуйста, проверьте корректность введенных данных.
+            </p>
+            <p v-else>
+              При отправки анкеты произошла ошибка, попробуйте еще раз.
+            </p>
+          </div>
+          <div>
+            <button
+              type="submit"
+              :disabled="isSubmitting || !applyPolicy"
+              class="btn"
+            >
+              Отправить
+              <span v-if="isSubmitting" class="spinner">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                >
+                  <!-- Icon from Tabler Icons by Paweł Kuna - https://github.com/tabler/tabler-icons/blob/master/LICENSE -->
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 3a9 9 0 1 0 9 9"
+                  />
+                </svg>
+              </span>
+            </button>
+          </div>
+        </form>
+      </template>
     </div>
   </div>
 </template>
@@ -704,6 +840,12 @@ h1 {
   gap: 0.5rem;
 }
 
+.field_required label::after {
+  content: "*";
+  color: #ff4444;
+  margin-left: 2px;
+}
+
 .field_checkbox {
   display: inline-flex;
   gap: 0.25rem;
@@ -712,9 +854,7 @@ h1 {
 
 .field-card {
   padding: 1.5rem 1.5rem;
-  border: 1px solid #e1dfdf;
   background-color: #f3f3f3;
-  border-radius: 0.5rem;
 }
 
 .field__label {
@@ -767,7 +907,34 @@ h1 {
 .form-error-text {
   font-size: 0.875rem;
   color: #ff4444;
-  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.error-message {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 1rem 1rem;
+  background-color: rgba(201, 0, 0, 0.14);
+}
+
+.error-message__icon {
+  color: #ff4444;
+}
+
+.success-message {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 1rem 1rem;
+  background-color: rgba(0, 201, 81, 0.18);
+}
+
+.success-message__icon {
+  color: #00c951;
 }
 
 .w-1-3 {
@@ -776,6 +943,9 @@ h1 {
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.75rem 1rem;
   font-size: 1rem;
   line-height: 1;
@@ -836,6 +1006,22 @@ h1 {
   opacity: 0.65;
 }
 
+.spinner {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg); /* Начальное положение */
+  }
+  100% {
+    transform: rotate(360deg); /* Конечное положение */
+  }
+}
+
 @media (max-width: 640px) {
   .container {
     padding: 2rem 2rem 6rem 2rem;
@@ -851,7 +1037,7 @@ h1 {
   }
 
   .field-card {
-    padding: 2rem 1rem;
+    padding: 1.5rem 1rem;
   }
 }
 </style>

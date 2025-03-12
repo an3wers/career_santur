@@ -12,6 +12,7 @@
   "dependencies": {
     "@nuxt/eslint": "^0.7.6",
     "@vee-validate/yup": "^4.15.0",
+    "maska": "^3.1.0",
     "nuxt": "^3.15.4",
     "typescript": "^5.7.3",
     "vee-validate": "^4.15.0",
