@@ -148,7 +148,10 @@ const handleForm = handleSubmit(async (value, { resetForm }) => {
 
     await $fetch("https://career.santur.ru/apiVacancy/StoreAnkt", {
       method: "POST",
-      body: createFormData(value),
+      body: createFormJson(value),
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     resetForm();
@@ -159,6 +162,7 @@ const handleForm = handleSubmit(async (value, { resetForm }) => {
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createFormData(rawValues: FormValues) {
   const { family, ...other } = rawValues;
   const formData = new FormData();
@@ -197,6 +201,17 @@ function createFormData(rawValues: FormValues) {
   );
 
   return formData;
+}
+
+function createFormJson(rawValues: FormValues) {
+  return {
+    ...rawValues,
+    isChangedLastName: isChangedLastName.value,
+    isAddressSameRegistration: isAddressSameRegistration.value,
+    hasCriminalRecord: hasCriminalRecord.value,
+    hasLegalEntityHead: hasLegalEntityHead.value,
+    hasStateOfficialRelative: hasStateOfficialRelative.value,
+  };
 }
 </script>
 
