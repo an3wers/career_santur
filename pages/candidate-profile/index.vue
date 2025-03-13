@@ -146,11 +146,10 @@ const handleForm = handleSubmit(async (value, { resetForm }) => {
     submitStatus.value = "pending";
     console.log({ form: value });
 
-    await $fetch("https://46.48.32.34:10101/apiVacancy/StoreChel", {
+    await $fetch("https://career.santur.ru/apiVacancy/StoreAnkt", {
       method: "POST",
       body: createFormData(value),
     });
-    // await new Promise((res) => setTimeout(res, 600));
 
     resetForm();
     submitStatus.value = "success";

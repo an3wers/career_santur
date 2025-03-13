@@ -33,8 +33,15 @@ export default defineNuxtConfig({
               to: "https://isantur.ru/apissz/**",
             },
           },
+          "candidate-profile": {
+            prerender: true,
+          },
         }
-      : {},
+      : {
+          "candidate-profile": {
+            prerender: true,
+          },
+        },
 
   css: ["~/assets/styles/style.css"],
 
