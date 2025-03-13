@@ -28,6 +28,7 @@ const schema = computed(() =>
   toTypedSchema(
     yup.object({
       vacancy: yup.string().required("Обязательное поле").trim(),
+      city: yup.string().required("Обязательное поле").trim(),
       fullname: yup.string().required("Обязательное поле").trim(),
       previousLastNames: isChangedLastName.value
         ? yup.string().required("Обязательное поле").trim()
@@ -92,12 +93,16 @@ const { errors, defineField, values, handleSubmit, isSubmitting } = useForm({
       },
     ],
     maritalStatus: "",
+    city: "Екатеринбург",
   },
 });
 
 type FormValues = typeof values;
 
 const [vacancy] = defineField("vacancy");
+
+const [city] = defineField("city");
+
 const [fullname] = defineField("fullname");
 
 const [previousLastNames] = defineField("previousLastNames");
@@ -144,9 +149,11 @@ const hasFieldsErrors = computed(() => Object.keys(errors.value).length > 0);
 const handleForm = handleSubmit(async (value, { resetForm }) => {
   try {
     submitStatus.value = "pending";
-    console.log({ form: value });
-
-    await $fetch("https://career.santur.ru/apiVacancy/StoreAnkt", {
+    const response = await $fetch<{
+      data: unknown;
+      success: boolean;
+      message: string;
+    }>("https://career.santur.ru/apiVacancy/StoreAnkt", {
       method: "POST",
       body: createFormJson(value),
       headers: {
@@ -154,8 +161,12 @@ const handleForm = handleSubmit(async (value, { resetForm }) => {
       },
     });
 
-    resetForm();
+    if (!response?.success) {
+      submitStatus.value = "error";
+    }
+
     submitStatus.value = "success";
+    resetForm();
   } catch (error) {
     console.error(error);
     submitStatus.value = "error";
@@ -204,8 +215,30 @@ function createFormData(rawValues: FormValues) {
 }
 
 function createFormJson(rawValues: FormValues) {
+  const values = rawValues;
+
+  if (!values.address) {
+    values.address = values.registrationAddress;
+  }
+
+  if (!values.previousLastNames) {
+    values.previousLastNames = "";
+  }
+
+  if (!values.criminalDetail) {
+    values.criminalDetail = "";
+  }
+
+  if (!values.legalEntityHeadDetail) {
+    values.legalEntityHeadDetail = "";
+  }
+
+  if (!values.stateOfficialDetail) {
+    values.stateOfficialDetail = "";
+  }
+
   return {
-    ...rawValues,
+    ...values,
     isChangedLastName: isChangedLastName.value,
     isAddressSameRegistration: isAddressSameRegistration.value,
     hasCriminalRecord: hasCriminalRecord.value,
@@ -241,22 +274,44 @@ function createFormJson(rawValues: FormValues) {
       </div>
       <template v-if="submitStatus !== 'success'">
         <form class="form" @submit.prevent="handleForm">
-          <div class="field field_required">
-            <label class="field__label" for="vacancy"
-              >Интересующая вакансия</label
-            >
-            <input
-              id="vacancy"
-              v-model="vacancy"
-              name="vacancy"
-              type="text"
-              class="field__input"
-              :class="{ error: errors.vacancy }"
-            />
-            <div v-if="errors.vacancy" class="field__error-text">
-              {{ errors.vacancy }}
+          <div class="field-group-h">
+            <div class="field field_required">
+              <label class="field__label" for="vacancy"
+                >Интересующая вакансия</label
+              >
+              <input
+                id="vacancy"
+                v-model="vacancy"
+                name="vacancy"
+                type="text"
+                class="field__input"
+                :class="{ error: errors.vacancy }"
+              />
+              <div v-if="errors.vacancy" class="field__error-text">
+                {{ errors.vacancy }}
+              </div>
+            </div>
+
+            <div class="field field_required w-1-3 shrink-0">
+              <label class="field__label" for="city"
+                >В каком городе вакансия?</label
+              >
+              <select
+                id="city"
+                v-model="city"
+                class="field__input"
+                :class="{ error: errors.city }"
+              >
+                <option value="Екатеринбург">Екатеринбург</option>
+                <option value="Нижний Тагил">Нижний Тагил</option>
+                <option value="Пермь">Пермь</option>
+              </select>
+              <div v-if="errors.city" class="field__error-text">
+                {{ errors.city }}
+              </div>
             </div>
           </div>
+
           <div class="field field_required">
             <label class="field__label" for="fullname">ФИО</label>
             <input
@@ -411,10 +466,10 @@ function createFormJson(rawValues: FormValues) {
               :class="{ error: errors.maritalStatus }"
             >
               <option disabled value="">Выберите вариант</option>
-              <option>холост</option>
-              <option>не замужем</option>
-              <option>женат</option>
-              <option>замужем</option>
+              <option value="холост">холост</option>
+              <option value="не замужем">не замужем</option>
+              <option value="женат">женат</option>
+              <option value="замужем">замужем</option>
             </select>
             <div v-if="errors.maritalStatus" class="field__error-text">
               {{ errors.maritalStatus }}
@@ -778,7 +833,6 @@ function createFormJson(rawValues: FormValues) {
                   height="18"
                   viewBox="0 0 24 24"
                 >
-                  <!-- Icon from Tabler Icons by Paweł Kuna - https://github.com/tabler/tabler-icons/blob/master/LICENSE -->
                   <path
                     fill="none"
                     stroke="currentColor"
@@ -868,7 +922,7 @@ h1 {
 
 .field-card {
   padding: 1.5rem 1.5rem;
-  background-color: #f3f3f3;
+  background-color: #eef3f8;
 }
 
 .field__label {
@@ -953,6 +1007,11 @@ h1 {
 
 .w-1-3 {
   width: 33.33%;
+  flex-shrink: 0;
+  min-width: 200px;
+}
+
+.shrink-0 {
   flex-shrink: 0;
 }
 
