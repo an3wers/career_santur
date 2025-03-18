@@ -2,6 +2,7 @@
 import { useForm, FieldArray } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
+import HoneypotInput from "~/components/HoneypotInput.vue";
 
 definePageMeta({
   layout: "sb-form",
@@ -16,6 +17,8 @@ useHead({
     },
   ],
 });
+
+const honeyRef = useTemplateRef<typeof HoneypotInput>("honeyInput");
 
 const isChangedLastName = ref(false);
 const isAddressSameRegistration = ref(true);
@@ -146,14 +149,21 @@ const submitStatus = ref<"idle" | "pending" | "success" | "error">("idle");
 
 const hasFieldsErrors = computed(() => Object.keys(errors.value).length > 0);
 
+const { apiCandidate } = useRuntimeConfig().public;
+
 const handleForm = handleSubmit(async (value, { resetForm }) => {
   try {
+    if (honeyRef.value && honeyRef.value.isSpam()) {
+      throw new Error("Request Error");
+    }
+
     submitStatus.value = "pending";
+
     const response = await $fetch<{
       data: unknown;
       success: boolean;
       message: string;
-    }>("https://career.santur.ru/apiVacancy/StoreAnkt", {
+    }>(`${apiCandidate}apiVacancy/StoreAnkt`, {
       method: "POST",
       body: createFormJson(value),
       headers: {
@@ -217,24 +227,60 @@ function createFormData(rawValues: FormValues) {
 function createFormJson(rawValues: FormValues) {
   const values = rawValues;
 
-  if (!values.address) {
-    values.address = values.registrationAddress;
+  checkInputFlag();
+  removeEmptyFamilyFields();
+
+  function removeEmptyFamilyFields() {
+    if (!values.family) {
+      values.family = [];
+    }
+
+    values.family = values.family.filter((el) => {
+      return (
+        el.degreeOfKinship !== "" ||
+        el.fullname !== "" ||
+        el.jobtitle !== "" ||
+        el.birthDate !== "" ||
+        el.phone !== ""
+      );
+    });
   }
 
-  if (!values.previousLastNames) {
-    values.previousLastNames = "";
-  }
+  function checkInputFlag() {
+    if (
+      !values.previousLastNames ||
+      (!isChangedLastName.value && values.previousLastNames !== "")
+    ) {
+      values.previousLastNames = "";
+    }
 
-  if (!values.criminalDetail) {
-    values.criminalDetail = "";
-  }
+    if (
+      !values.address ||
+      (isAddressSameRegistration.value && values.registrationAddress !== "")
+    ) {
+      values.address = values.registrationAddress;
+    }
 
-  if (!values.legalEntityHeadDetail) {
-    values.legalEntityHeadDetail = "";
-  }
+    if (
+      !values.criminalDetail ||
+      (!hasCriminalRecord.value && values.criminalDetail !== "")
+    ) {
+      values.criminalDetail = "";
+    }
 
-  if (!values.stateOfficialDetail) {
-    values.stateOfficialDetail = "";
+    if (
+      !values.legalEntityHeadDetail ||
+      (!hasLegalEntityHead.value && values.legalEntityHeadDetail !== "")
+    ) {
+      values.legalEntityHeadDetail = "";
+    }
+
+    if (
+      !values.stateOfficialDetail ||
+      (!hasStateOfficialRelative.value && values.stateOfficialDetail !== "")
+    ) {
+      values.stateOfficialDetail = "";
+    }
   }
 
   return {
@@ -263,7 +309,6 @@ function createFormJson(rawValues: FormValues) {
             height="32"
             viewBox="0 0 24 24"
           >
-            <!-- Icon from Tabler Icons by Paweł Kuna - https://github.com/tabler/tabler-icons/blob/master/LICENSE -->
             <path
               fill="currentColor"
               d="M17 3.34a10 10 0 1 1-14.995 8.984L2 12l.005-.324A10 10 0 0 1 17 3.34m-1.293 5.953a1 1 0 0 0-1.32-.083l-.094.083L11 12.585l-1.293-1.292l-.094-.083a1 1 0 0 0-1.403 1.403l.083.094l2 2l.094.083a1 1 0 0 0 1.226 0l.094-.083l4-4l.083-.094a1 1 0 0 0-.083-1.32"
@@ -286,6 +331,7 @@ function createFormJson(rawValues: FormValues) {
                 type="text"
                 class="field__input"
                 :class="{ error: errors.vacancy }"
+                :disabled="isSubmitting"
               />
               <div v-if="errors.vacancy" class="field__error-text">
                 {{ errors.vacancy }}
@@ -301,6 +347,7 @@ function createFormJson(rawValues: FormValues) {
                 v-model="city"
                 class="field__input"
                 :class="{ error: errors.city }"
+                :disabled="isSubmitting"
               >
                 <option value="Екатеринбург">Екатеринбург</option>
                 <option value="Нижний Тагил">Нижний Тагил</option>
@@ -312,6 +359,8 @@ function createFormJson(rawValues: FormValues) {
             </div>
           </div>
 
+          <!--  -->
+          <HoneypotInput ref="honeyInput" name="fax-number" />
           <div class="field field_required">
             <label class="field__label" for="fullname">ФИО</label>
             <input
@@ -321,6 +370,7 @@ function createFormJson(rawValues: FormValues) {
               type="text"
               class="field__input"
               :class="{ error: errors.fullname }"
+              :disabled="isSubmitting"
             />
             <div v-if="errors.fullname" class="field__error-text">
               {{ errors.fullname }}
@@ -333,6 +383,7 @@ function createFormJson(rawValues: FormValues) {
                 v-model="isChangedLastName"
                 type="checkbox"
                 name="isChangedLastName"
+                :disabled="isSubmitting"
               />
               <label class="field__label" for="isChangedLastName"
                 >Меняли ли вы фамилию?</label
@@ -348,6 +399,7 @@ function createFormJson(rawValues: FormValues) {
                 name="previousLastNames"
                 class="field__input"
                 :class="{ error: errors.previousLastNames }"
+                :disabled="isSubmitting"
               />
               <div v-if="errors.previousLastNames" class="field__error-text">
                 {{ errors.previousLastNames }}
@@ -364,6 +416,7 @@ function createFormJson(rawValues: FormValues) {
               name="passportSerial"
               class="field__input"
               :class="{ error: errors.passportSerial }"
+              :disabled="isSubmitting"
             />
             <div v-if="errors.passportSerial" class="field__error-text">
               {{ errors.passportSerial }}
@@ -377,6 +430,7 @@ function createFormJson(rawValues: FormValues) {
               name="passportRegisterDetail"
               class="field__input"
               :class="{ error: errors.passportRegisterDetail }"
+              :disabled="isSubmitting"
             />
             <div v-if="errors.passportRegisterDetail" class="field__error-text">
               {{ errors.passportRegisterDetail }}
@@ -392,6 +446,7 @@ function createFormJson(rawValues: FormValues) {
                 type="date"
                 class="field__input"
                 :class="{ error: errors.birthDate }"
+                :disabled="isSubmitting"
               />
               <div v-if="errors.birthDate" class="field__error-text">
                 {{ errors.birthDate }}
@@ -408,6 +463,7 @@ function createFormJson(rawValues: FormValues) {
                 type="text"
                 class="field__input"
                 :class="{ error: errors.birthPlace }"
+                :disabled="isSubmitting"
               />
               <div v-if="errors.birthPlace" class="field__error-text">
                 {{ errors.birthPlace }}
@@ -425,6 +481,7 @@ function createFormJson(rawValues: FormValues) {
               type="text"
               class="field__input"
               :class="{ error: errors.registrationAddress }"
+              :disabled="isSubmitting"
             />
             <div v-if="errors.registrationAddress" class="field__error-text">
               {{ errors.registrationAddress }}
@@ -436,6 +493,7 @@ function createFormJson(rawValues: FormValues) {
               v-model="isAddressSameRegistration"
               type="checkbox"
               name="isAddressSameRegistration"
+              :disabled="isSubmitting"
             />
             <label class="field__label" for="isAddressSameRegistration"
               >Адрес проживания совпадает с местом регистрации?</label
@@ -450,6 +508,7 @@ function createFormJson(rawValues: FormValues) {
               type="text"
               class="field__input"
               :class="{ error: errors.address }"
+              :disabled="isSubmitting"
             />
             <div v-if="errors.address" class="field__error-text">
               {{ errors.address }}
@@ -464,6 +523,7 @@ function createFormJson(rawValues: FormValues) {
               v-model="maritalStatus"
               class="field__input"
               :class="{ error: errors.maritalStatus }"
+              :disabled="isSubmitting"
             >
               <option disabled value="">Выберите вариант</option>
               <option value="холост">холост</option>
@@ -487,6 +547,7 @@ function createFormJson(rawValues: FormValues) {
               name="children"
               class="field__input"
               :class="{ error: errors.children }"
+              :disabled="isSubmitting"
             />
             <div v-if="errors.children" class="field__error-text">
               {{ errors.children }}
@@ -507,6 +568,7 @@ function createFormJson(rawValues: FormValues) {
               name="livingConditions"
               class="field__input"
               :class="{ error: errors.livingConditions }"
+              :disabled="isSubmitting"
             />
             <div v-if="errors.livingConditions" class="field__error-text">
               {{ errors.livingConditions }}
@@ -525,6 +587,7 @@ function createFormJson(rawValues: FormValues) {
                 type="tel"
                 class="field__input"
                 :class="{ error: errors.phone }"
+                :disabled="isSubmitting"
               />
               <div v-if="errors.phone" class="field__error-text">
                 {{ errors.phone }}
@@ -539,6 +602,7 @@ function createFormJson(rawValues: FormValues) {
                 type="email"
                 class="field__input"
                 :class="{ error: errors.email }"
+                :disabled="isSubmitting"
               />
               <div v-if="errors.email" class="field__error-text">
                 {{ errors.email }}
@@ -558,6 +622,7 @@ function createFormJson(rawValues: FormValues) {
               name="militaryDetail"
               class="field__input"
               :class="{ error: errors.militaryDetail }"
+              :disabled="isSubmitting"
             />
             <div v-if="errors.militaryDetail" class="field__error-text">
               {{ errors.militaryDetail }}
@@ -571,6 +636,7 @@ function createFormJson(rawValues: FormValues) {
                 v-model="hasCriminalRecord"
                 type="checkbox"
                 name="hasCriminalRecord"
+                :disabled="isSubmitting"
               />
               <label class="field__label" for="hasCriminalRecord"
                 >Привлекались ли вы к уголовной ответственности?</label
@@ -586,6 +652,7 @@ function createFormJson(rawValues: FormValues) {
                 name="criminalDetail"
                 class="field__input"
                 :class="{ error: errors.criminalDetail }"
+                :disabled="isSubmitting"
               />
               <div v-if="errors.criminalDetail" class="field__error-text">
                 {{ errors.criminalDetail }}
@@ -599,6 +666,7 @@ function createFormJson(rawValues: FormValues) {
               v-model="hasDebts"
               type="checkbox"
               name="hasDebts"
+              :disabled="isSubmitting"
             />
             <label class="field__label" for="hasDebts">
               Имеются ли у вас задолженности по кредитам, алиментам, квартплате?
@@ -612,6 +680,7 @@ function createFormJson(rawValues: FormValues) {
                 v-model="hasLegalEntityHead"
                 type="checkbox"
                 name="hasLegalEntityHead"
+                :disabled="isSubmitting"
               />
               <label class="field__label" for="hasLegalEntityHead">
                 Являетесь (являлись) ли вы руководителем (учредителем)
@@ -627,6 +696,7 @@ function createFormJson(rawValues: FormValues) {
                 name="legalEntityHeadDetail"
                 class="field__input"
                 :class="{ error: errors.legalEntityHeadDetail }"
+                :disabled="isSubmitting"
               />
               <div
                 v-if="errors.legalEntityHeadDetail"
@@ -644,6 +714,7 @@ function createFormJson(rawValues: FormValues) {
                 v-model="hasStateOfficialRelative"
                 type="checkbox"
                 name="hasStateOfficialRelative"
+                :disabled="isSubmitting"
               />
               <label class="field__label" for="hasStateOfficialRelative">
                 Является ли кто-то из ваших близких родственником
@@ -661,6 +732,7 @@ function createFormJson(rawValues: FormValues) {
                 name="stateOfficialDetail"
                 class="field__input"
                 :class="{ error: errors.stateOfficialDetail }"
+                :disabled="isSubmitting"
               />
               <div v-if="errors.stateOfficialDetail" class="field__error-text">
                 {{ errors.stateOfficialDetail }}
@@ -689,6 +761,7 @@ function createFormJson(rawValues: FormValues) {
                       v-model="family![idx].degreeOfKinship"
                       :name="`degreeOfKinship_${idx}`"
                       class="field__input"
+                      :disabled="isSubmitting"
                     />
                   </div>
                   <div class="field">
@@ -700,6 +773,7 @@ function createFormJson(rawValues: FormValues) {
                       v-model="family![idx].fullname"
                       :name="`fullname_${idx}`"
                       class="field__input"
+                      :disabled="isSubmitting"
                     />
                   </div>
                 </div>
@@ -715,6 +789,7 @@ function createFormJson(rawValues: FormValues) {
                       :name="`birthDate_${idx}`"
                       type="date"
                       class="field__input"
+                      :disabled="isSubmitting"
                     />
                   </div>
                   <div class="field">
@@ -727,6 +802,7 @@ function createFormJson(rawValues: FormValues) {
                       :name="`phone_${idx}`"
                       type="tel"
                       class="field__input"
+                      :disabled="isSubmitting"
                     />
                   </div>
                 </div>
@@ -741,12 +817,14 @@ function createFormJson(rawValues: FormValues) {
                     :name="`jobtitle_${idx}`"
                     type="text"
                     class="field__input"
+                    :disabled="isSubmitting"
                   />
                 </div>
                 <div v-if="idx !== 0">
                   <button
                     type="button"
                     class="btn btn_sm btn_warning"
+                    :disabled="isSubmitting"
                     @click="remove(idx)"
                   >
                     Удалить
@@ -756,7 +834,7 @@ function createFormJson(rawValues: FormValues) {
               <div>
                 <button
                   type="button"
-                  :disabled="Boolean(family!.length > 3)"
+                  :disabled="Boolean(family!.length > 3) || isSubmitting"
                   class="btn btn_sm"
                   @click="
                     push({
@@ -780,6 +858,7 @@ function createFormJson(rawValues: FormValues) {
               v-model="applyPolicy"
               type="checkbox"
               name="applyPolicy"
+              :disabled="isSubmitting"
             />
             <label class="field__label" for="applyPolicy">
               Я даю согласие на
@@ -1088,10 +1167,10 @@ h1 {
 
 @keyframes spin {
   0% {
-    transform: rotate(0deg); /* Начальное положение */
+    transform: rotate(0deg);
   }
   100% {
-    transform: rotate(360deg); /* Конечное положение */
+    transform: rotate(360deg);
   }
 }
 

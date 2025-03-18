@@ -22,6 +22,10 @@ export default defineNuxtConfig({
         process.env.NODE_ENV === "development"
           ? "http://localhost:3000/"
           : "https://career.santur.ru/",
+      apiCandidate:
+        process.env.NODE_ENV === "development"
+          ? "http://localhost:3000/"
+          : "https://career.santur.ru/",
     },
   },
 
@@ -35,6 +39,11 @@ export default defineNuxtConfig({
           },
           "candidate-profile": {
             prerender: true,
+          },
+          "/apiVacancy/**": {
+            proxy: {
+              to: "https://webapp.santur.ru/apiVacancy/**",
+            },
           },
         }
       : {
