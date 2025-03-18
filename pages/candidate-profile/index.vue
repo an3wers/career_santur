@@ -326,7 +326,7 @@ function createFormJson(rawValues: FormValues) {
               >
               <input
                 id="vacancy"
-                v-model="vacancy"
+                v-model.trim="vacancy"
                 name="vacancy"
                 type="text"
                 class="field__input"
@@ -344,7 +344,7 @@ function createFormJson(rawValues: FormValues) {
               >
               <select
                 id="city"
-                v-model="city"
+                v-model.trim="city"
                 class="field__input"
                 :class="{ error: errors.city }"
                 :disabled="isSubmitting"
@@ -365,7 +365,7 @@ function createFormJson(rawValues: FormValues) {
             <label class="field__label" for="fullname">ФИО</label>
             <input
               id="fullname"
-              v-model="fullname"
+              v-model.trim="fullname"
               name="fullname"
               type="text"
               class="field__input"
@@ -380,7 +380,7 @@ function createFormJson(rawValues: FormValues) {
             <div class="field_checkbox">
               <input
                 id="isChangedLastName"
-                v-model="isChangedLastName"
+                v-model.trim="isChangedLastName"
                 type="checkbox"
                 name="isChangedLastName"
                 :disabled="isSubmitting"
@@ -391,10 +391,13 @@ function createFormJson(rawValues: FormValues) {
             </div>
 
             <div v-show="isChangedLastName" class="field">
-              <span class="field__hint">Укажите прежнюю. Сколько раз?</span>
+              <span class="field__hint"
+                >Если несколько раз, перечислите через запятую все предыдущие
+                фамилии.</span
+              >
               <input
                 id="previousLastNames"
-                v-model="previousLastNames"
+                v-model.trim="previousLastNames"
                 type="text"
                 name="previousLastNames"
                 class="field__input"
@@ -412,7 +415,8 @@ function createFormJson(rawValues: FormValues) {
             <span class="field__hint">Формат: 4444 333333</span>
             <input
               id="passportSerial"
-              v-model="passportSerial"
+              v-model.trim="passportSerial"
+              type="text"
               name="passportSerial"
               class="field__input"
               :class="{ error: errors.passportSerial }"
@@ -426,7 +430,7 @@ function createFormJson(rawValues: FormValues) {
             <label class="field__label">Паспорт выдан (когда, кем)</label>
             <input
               id="passportRegisterDetail"
-              v-model="passportRegisterDetail"
+              v-model.trim="passportRegisterDetail"
               name="passportRegisterDetail"
               class="field__input"
               :class="{ error: errors.passportRegisterDetail }"
@@ -441,7 +445,7 @@ function createFormJson(rawValues: FormValues) {
               <label class="field__label" for="birthDate">Дата рождения</label>
               <input
                 id="birthDate"
-                v-model="birthDate"
+                v-model.trim="birthDate"
                 name="birthDate"
                 type="date"
                 class="field__input"
@@ -458,7 +462,7 @@ function createFormJson(rawValues: FormValues) {
               >
               <input
                 id="birthPlace"
-                v-model="birthPlace"
+                v-model.trim="birthPlace"
                 name="birthPlace"
                 type="text"
                 class="field__input"
@@ -476,7 +480,7 @@ function createFormJson(rawValues: FormValues) {
             >
             <input
               id="registrationAddress"
-              v-model="registrationAddress"
+              v-model.trim="registrationAddress"
               name="registrationAddress"
               type="text"
               class="field__input"
@@ -490,7 +494,7 @@ function createFormJson(rawValues: FormValues) {
           <div class="field_checkbox">
             <input
               id="isAddressSameRegistration"
-              v-model="isAddressSameRegistration"
+              v-model.trim="isAddressSameRegistration"
               type="checkbox"
               name="isAddressSameRegistration"
               :disabled="isSubmitting"
@@ -503,7 +507,7 @@ function createFormJson(rawValues: FormValues) {
             <label class="field__label" for="address">Адрес проживания</label>
             <input
               id="address"
-              v-model="address"
+              v-model.trim="address"
               name="address"
               type="text"
               class="field__input"
@@ -520,7 +524,7 @@ function createFormJson(rawValues: FormValues) {
             >
             <select
               id="maritalStatus"
-              v-model="maritalStatus"
+              v-model.trim="maritalStatus"
               class="field__input"
               :class="{ error: errors.maritalStatus }"
               :disabled="isSubmitting"
@@ -542,7 +546,7 @@ function createFormJson(rawValues: FormValues) {
             >
             <input
               id="children"
-              v-model="children"
+              v-model.trim="children"
               type="text"
               name="children"
               class="field__input"
@@ -563,7 +567,7 @@ function createFormJson(rawValues: FormValues) {
             </span>
             <input
               id="livingConditions"
-              v-model="livingConditions"
+              v-model.trim="livingConditions"
               type="text"
               name="livingConditions"
               class="field__input"
@@ -580,7 +584,7 @@ function createFormJson(rawValues: FormValues) {
               <label class="field__label" for="phone">Телефон</label>
               <input
                 id="phone"
-                v-model="phone"
+                v-model.trim="phone"
                 v-maska="'+7 (###) ###-##-##'"
                 placeholder="+7 (___) ___-__-__"
                 name="phone"
@@ -597,7 +601,7 @@ function createFormJson(rawValues: FormValues) {
               <label class="field__label" for="email">Email</label>
               <input
                 id="email"
-                v-model="email"
+                v-model.trim="email"
                 name="email"
                 type="email"
                 class="field__input"
@@ -617,7 +621,7 @@ function createFormJson(rawValues: FormValues) {
             <span class="field__hint">Служил/ не служил, № воинской части</span>
             <input
               id="militaryDetail"
-              v-model="militaryDetail"
+              v-model.trim="militaryDetail"
               type="text"
               name="militaryDetail"
               class="field__input"
@@ -633,7 +637,7 @@ function createFormJson(rawValues: FormValues) {
             <div class="field_checkbox">
               <input
                 id="hasCriminalRecord"
-                v-model="hasCriminalRecord"
+                v-model.trim="hasCriminalRecord"
                 type="checkbox"
                 name="hasCriminalRecord"
                 :disabled="isSubmitting"
@@ -647,7 +651,7 @@ function createFormJson(rawValues: FormValues) {
               <span class="field__hint">Укажите по какой статье, когда?</span>
               <input
                 id="criminalDetail"
-                v-model="criminalDetail"
+                v-model.trim="criminalDetail"
                 type="text"
                 name="criminalDetail"
                 class="field__input"
@@ -663,7 +667,7 @@ function createFormJson(rawValues: FormValues) {
           <div class="field_checkbox">
             <input
               id="hasDebts"
-              v-model="hasDebts"
+              v-model.trim="hasDebts"
               type="checkbox"
               name="hasDebts"
               :disabled="isSubmitting"
@@ -677,7 +681,7 @@ function createFormJson(rawValues: FormValues) {
             <div class="field_checkbox">
               <input
                 id="hasLegalEntityHead"
-                v-model="hasLegalEntityHead"
+                v-model.trim="hasLegalEntityHead"
                 type="checkbox"
                 name="hasLegalEntityHead"
                 :disabled="isSubmitting"
@@ -691,8 +695,8 @@ function createFormJson(rawValues: FormValues) {
               <span class="field__hint">Укажите ИНН</span>
               <input
                 id="legalEntityHeadDetail"
-                v-model="legalEntityHeadDetail"
-                type="text"
+                v-model.trim="legalEntityHeadDetail"
+                type="number"
                 name="legalEntityHeadDetail"
                 class="field__input"
                 :class="{ error: errors.legalEntityHeadDetail }"
@@ -711,7 +715,7 @@ function createFormJson(rawValues: FormValues) {
             <div class="field_checkbox">
               <input
                 id="hasStateOfficialRelative"
-                v-model="hasStateOfficialRelative"
+                v-model.trim="hasStateOfficialRelative"
                 type="checkbox"
                 name="hasStateOfficialRelative"
                 :disabled="isSubmitting"
@@ -727,7 +731,7 @@ function createFormJson(rawValues: FormValues) {
               >
               <input
                 id="stateOfficialDetail"
-                v-model="stateOfficialDetail"
+                v-model.trim="stateOfficialDetail"
                 type="text"
                 name="stateOfficialDetail"
                 class="field__input"
@@ -758,7 +762,7 @@ function createFormJson(rawValues: FormValues) {
                     >
                     <input
                       :id="`degreeOfKinship_${idx}`"
-                      v-model="family![idx].degreeOfKinship"
+                      v-model.trim="family![idx].degreeOfKinship"
                       :name="`degreeOfKinship_${idx}`"
                       class="field__input"
                       :disabled="isSubmitting"
@@ -770,7 +774,7 @@ function createFormJson(rawValues: FormValues) {
                     >
                     <input
                       :id="`fullname_${idx}`"
-                      v-model="family![idx].fullname"
+                      v-model.trim="family![idx].fullname"
                       :name="`fullname_${idx}`"
                       class="field__input"
                       :disabled="isSubmitting"
@@ -785,7 +789,7 @@ function createFormJson(rawValues: FormValues) {
                     >
                     <input
                       :id="`birthDate_${idx}`"
-                      v-model="family![idx].birthDate"
+                      v-model.trim="family![idx].birthDate"
                       :name="`birthDate_${idx}`"
                       type="date"
                       class="field__input"
@@ -798,7 +802,7 @@ function createFormJson(rawValues: FormValues) {
                     >
                     <input
                       :id="`phone_${idx}`"
-                      v-model="family![idx].phone"
+                      v-model.trim="family![idx].phone"
                       :name="`phone_${idx}`"
                       type="tel"
                       class="field__input"
@@ -813,7 +817,7 @@ function createFormJson(rawValues: FormValues) {
                   >
                   <input
                     :id="`jobtitle_${idx}`"
-                    v-model="family![idx].jobtitle"
+                    v-model.trim="family![idx].jobtitle"
                     :name="`jobtitle_${idx}`"
                     type="text"
                     class="field__input"
@@ -855,7 +859,7 @@ function createFormJson(rawValues: FormValues) {
           <div class="field_checkbox">
             <input
               id="applyPolicy"
-              v-model="applyPolicy"
+              v-model.trim="applyPolicy"
               type="checkbox"
               name="applyPolicy"
               :disabled="isSubmitting"
