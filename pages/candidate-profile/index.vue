@@ -37,6 +37,10 @@ const schema = computed(() =>
         ? yup.string().required("Обязательное поле").trim()
         : yup.string().notRequired(),
       passportSerial: yup.string().required("Обязательное поле").trim(),
+      passportType: yup
+        .string()
+        .required("Обязательное поле")
+        .oneOf(["Паспорт РФ", "Паспорт другого Гос-ва"]),
       passportRegisterDetail: yup.string().required("Обязательное поле").trim(),
       birthDate: yup.string().required("Обязательное поле").trim(),
       birthPlace: yup.string().required("Обязательное поле").trim(),
@@ -47,17 +51,13 @@ const schema = computed(() =>
       maritalStatus: yup
         .string()
         .required("Обязательное поле")
-        .oneOf(
-          ["холост", "не замужем", "женат", "замужем"],
-          "Обязательное поле"
-        ),
+        .oneOf(["холост/не замужем", "женат/замужем"], "Обязательное поле"),
       children: yup.string().notRequired(),
-      livingConditions: yup.string().required("Обязательное поле").trim(),
-      email: yup
+      livingConditions: yup
         .string()
-        .email("Введите корректный email")
         .required("Обязательное поле")
-        .trim(),
+        .oneOf(["Собственное жилье", "Снимаю", "Другое"], "Обязательное поле"),
+      email: yup.string().email("Введите корректный email").trim(),
       phone: yup.string().required("Обязательное поле").trim(),
       militaryDetail: yup.string().notRequired(),
       criminalDetail: hasCriminalRecord.value
@@ -79,10 +79,20 @@ const schema = computed(() =>
           phone: yup.string().notRequired(),
         })
       ),
+      lastJobs: yup.array().of(
+        yup.object({
+          startDate: yup.string().notRequired(),
+          endDate: yup.string().notRequired(),
+          company: yup.string().notRequired(),
+          position: yup.string().notRequired(),
+          functional: yup.string().notRequired(),
+        })
+      ),
     })
   )
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { errors, defineField, values, handleSubmit, isSubmitting } = useForm({
   validationSchema: schema,
   initialValues: {
@@ -95,8 +105,19 @@ const { errors, defineField, values, handleSubmit, isSubmitting } = useForm({
         phone: "",
       },
     ],
+    lastJobs: [
+      {
+        startDate: "",
+        endDate: "",
+        company: "",
+        position: "",
+        functional: "",
+      },
+    ],
     maritalStatus: "",
     city: "Екатеринбург",
+    passportType: "Паспорт РФ",
+    livingConditions: "",
   },
 });
 
@@ -111,6 +132,7 @@ const [fullname] = defineField("fullname");
 const [previousLastNames] = defineField("previousLastNames");
 
 const [passportSerial] = defineField("passportSerial");
+const [passportType] = defineField("passportType");
 const [passportRegisterDetail] = defineField("passportRegisterDetail");
 
 const [birthDate] = defineField("birthDate");
@@ -142,6 +164,8 @@ const [hasDebts] = defineField("hasDebts");
 const [legalEntityHeadDetail] = defineField("legalEntityHeadDetail"); // ИНН
 
 const [stateOfficialDetail] = defineField("stateOfficialDetail");
+
+const [lastJobs] = defineField("lastJobs");
 
 const [family] = defineField("family");
 
@@ -183,66 +207,80 @@ const handleForm = handleSubmit(async (value, { resetForm }) => {
   }
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function createFormData(rawValues: FormValues) {
-  const { family, ...other } = rawValues;
-  const formData = new FormData();
+// function createFormData(rawValues: FormValues) {
+//   const { family, ...other } = rawValues;
+//   const formData = new FormData();
 
-  Object.entries(other).forEach(([k, v]) => {
-    formData.append(k, v?.toString() ?? "");
-  });
+//   Object.entries(other).forEach(([k, v]) => {
+//     formData.append(k, v?.toString() ?? "");
+//   });
 
-  family?.forEach((el) => {
-    formData.append("family", JSON.stringify(el));
-  });
+//   family?.forEach((el) => {
+//     formData.append("family", JSON.stringify(el));
+//   });
 
-  formData.append(
-    "isChangedLastName",
-    isChangedLastName.value ? "true" : "false"
-  );
+//   formData.append(
+//     "isChangedLastName",
+//     isChangedLastName.value ? "true" : "false"
+//   );
 
-  formData.append(
-    "isAddressSameRegistration",
-    isAddressSameRegistration.value ? "true" : "false"
-  );
+//   formData.append(
+//     "isAddressSameRegistration",
+//     isAddressSameRegistration.value ? "true" : "false"
+//   );
 
-  formData.append(
-    "hasCriminalRecord",
-    hasCriminalRecord.value ? "true" : "false"
-  );
+//   formData.append(
+//     "hasCriminalRecord",
+//     hasCriminalRecord.value ? "true" : "false"
+//   );
 
-  formData.append(
-    "hasLegalEntityHead",
-    hasLegalEntityHead.value ? "true" : "false"
-  );
+//   formData.append(
+//     "hasLegalEntityHead",
+//     hasLegalEntityHead.value ? "true" : "false"
+//   );
 
-  formData.append(
-    "hasStateOfficialRelative",
-    hasStateOfficialRelative.value ? "true" : "false"
-  );
+//   formData.append(
+//     "hasStateOfficialRelative",
+//     hasStateOfficialRelative.value ? "true" : "false"
+//   );
 
-  return formData;
-}
+//   return formData;
+// }
 
 function createFormJson(rawValues: FormValues) {
   const values = rawValues;
 
   checkInputFlag();
   removeEmptyFamilyFields();
+  removeEmptyLastJobsFields();
 
   function removeEmptyFamilyFields() {
     if (!values.family) {
       values.family = [];
     }
 
+    // values.family = values.family.filter((el) => {
+    //   return (
+    //     el.degreeOfKinship !== "" ||
+    //     el.fullname !== "" ||
+    //     el.jobtitle !== "" ||
+    //     el.birthDate !== "" ||
+    //     el.phone !== ""
+    //   );
+    // });
+
     values.family = values.family.filter((el) => {
-      return (
-        el.degreeOfKinship !== "" ||
-        el.fullname !== "" ||
-        el.jobtitle !== "" ||
-        el.birthDate !== "" ||
-        el.phone !== ""
-      );
+      return el.degreeOfKinship !== "" && el.fullname !== "";
+    });
+  }
+
+  function removeEmptyLastJobsFields() {
+    if (!values.lastJobs) {
+      values.lastJobs = [];
+    }
+
+    values.lastJobs = values.lastJobs.filter((el) => {
+      return el.company !== "" && el.startDate !== "";
     });
   }
 
@@ -290,6 +328,7 @@ function createFormJson(rawValues: FormValues) {
     hasCriminalRecord: hasCriminalRecord.value,
     hasLegalEntityHead: hasLegalEntityHead.value,
     hasStateOfficialRelative: hasStateOfficialRelative.value,
+    checkedPolicyPersonalData: applyPolicy.value,
   };
 }
 </script>
@@ -344,7 +383,7 @@ function createFormJson(rawValues: FormValues) {
               >
               <select
                 id="city"
-                v-model.trim="city"
+                v-model="city"
                 class="field__input"
                 :class="{ error: errors.city }"
                 :disabled="isSubmitting"
@@ -359,8 +398,8 @@ function createFormJson(rawValues: FormValues) {
             </div>
           </div>
 
-          <!--  -->
           <HoneypotInput ref="honeyInput" name="fax-number" />
+
           <div class="field field_required">
             <label class="field__label" for="fullname">ФИО</label>
             <input
@@ -410,20 +449,49 @@ function createFormJson(rawValues: FormValues) {
             </div>
           </div>
 
-          <div class="field field_required w-1-3">
+          <div class="field field_required">
             <label class="field__label">Серия и номер паспорта</label>
-            <span class="field__hint">Формат: 4444 333333</span>
-            <input
-              id="passportSerial"
-              v-model.trim="passportSerial"
-              type="text"
-              name="passportSerial"
-              class="field__input"
-              :class="{ error: errors.passportSerial }"
-              :disabled="isSubmitting"
-            />
-            <div v-if="errors.passportSerial" class="field__error-text">
-              {{ errors.passportSerial }}
+            <div
+              style="
+                display: flex;
+                gap: 1rem;
+                width: 100%;
+                flex-wrap: wrap-reverse;
+                align-items: start;
+              "
+            >
+              <div class="w-1-3">
+                <input
+                  id="passportSerial"
+                  v-model.trim="passportSerial"
+                  v-maska="passportType === 'Паспорт РФ' ? '#### ######' : ''"
+                  type="text"
+                  name="passportSerial"
+                  class="field__input"
+                  :class="{ error: errors.passportSerial }"
+                  :disabled="isSubmitting"
+                  placeholder="Серия и номер"
+                />
+                <div v-if="errors.passportSerial" class="field__error-text">
+                  {{ errors.passportSerial }}
+                </div>
+              </div>
+              <div class="field field_required w-1-3">
+                <select
+                  id="passportType"
+                  v-model="passportType"
+                  class="field__input"
+                  :class="{ error: errors.passportType }"
+                >
+                  <option value="Паспорт РФ">Паспорт РФ</option>
+                  <option value="Паспорт другого Гос-ва">
+                    Паспорт другого Гос-ва
+                  </option>
+                </select>
+                <div v-if="errors.passportType" class="field__error-text">
+                  {{ errors.passportType }}
+                </div>
+              </div>
             </div>
           </div>
           <div class="field field_required">
@@ -530,10 +598,8 @@ function createFormJson(rawValues: FormValues) {
               :disabled="isSubmitting"
             >
               <option disabled value="">Выберите вариант</option>
-              <option value="холост">холост</option>
-              <option value="не замужем">не замужем</option>
-              <option value="женат">женат</option>
-              <option value="замужем">замужем</option>
+              <option value="холост/не замужем">холост/не замужем</option>
+              <option value="женат/замужем">женат/замужем</option>
             </select>
             <div v-if="errors.maritalStatus" class="field__error-text">
               {{ errors.maritalStatus }}
@@ -558,22 +624,22 @@ function createFormJson(rawValues: FormValues) {
             </div>
           </div>
 
-          <div class="field field_required">
+          <div class="field field_required w-1-3">
             <label for="livingConditions" class="field__label"
               >Условия проживания</label
             >
-            <span class="field__hint"
-              >Собственное жилье, с родителями, снимаю, общежитие, другое
-            </span>
-            <input
+            <select
               id="livingConditions"
-              v-model.trim="livingConditions"
-              type="text"
-              name="livingConditions"
+              v-model="livingConditions"
               class="field__input"
               :class="{ error: errors.livingConditions }"
               :disabled="isSubmitting"
-            />
+            >
+              <option value="">Выберите вариант</option>
+              <option value="Собственное жилье">Собственное жилье</option>
+              <option value="Снимаю">Снимаю</option>
+              <option value="Другое">Другое</option>
+            </select>
             <div v-if="errors.livingConditions" class="field__error-text">
               {{ errors.livingConditions }}
             </div>
@@ -597,7 +663,7 @@ function createFormJson(rawValues: FormValues) {
                 {{ errors.phone }}
               </div>
             </div>
-            <div class="field field_required">
+            <div class="field">
               <label class="field__label" for="email">Email</label>
               <input
                 id="email"
@@ -643,7 +709,8 @@ function createFormJson(rawValues: FormValues) {
                 :disabled="isSubmitting"
               />
               <label class="field__label" for="hasCriminalRecord"
-                >Привлекались ли вы к уголовной ответственности?</label
+                >Привлекались ли вы к уголовной/административной
+                ответственности?</label
               >
             </div>
 
@@ -721,7 +788,7 @@ function createFormJson(rawValues: FormValues) {
                 :disabled="isSubmitting"
               />
               <label class="field__label" for="hasStateOfficialRelative">
-                Является ли кто-то из ваших близких родственником
+                Является ли кто-то из ваших близких родственников
                 Государственным Должностным Лицом?
               </label>
             </div>
@@ -742,6 +809,106 @@ function createFormJson(rawValues: FormValues) {
                 {{ errors.stateOfficialDetail }}
               </div>
             </div>
+          </div>
+
+          <div class="field">
+            <label class="field__label" style="margin-bottom: 0.5rem"
+              >Опыт работы:</label
+            >
+
+            <FieldArray v-slot="{ fields, push, remove }" name="lastJobs">
+              <div
+                v-for="(field, idx) in fields"
+                :key="field.key"
+                class="field-group-v field-card"
+              >
+                <!-- <div class="field-group-v"></div> -->
+                <div class="field-group-h">
+                  <div class="field w-1-3">
+                    <label class="field__label">Период работы</label>
+                    <div style="display: flex; gap: 0.25rem">
+                      <input
+                        :id="`startDate-${idx}`"
+                        v-model.trim="lastJobs![idx].startDate"
+                        v-maska="'##/####'"
+                        class="field__input"
+                        :name="`startDate-${idx}`"
+                        placeholder="мм/гггг"
+                      />
+                      <input
+                        :id="`endDate-${idx}`"
+                        v-model.trim="lastJobs![idx].endDate"
+                        v-maska="'##/####'"
+                        class="field__input"
+                        :name="`endDate-${idx}`"
+                        placeholder="мм/гггг"
+                      />
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label :for="`company-${idx}`" class="field__label"
+                      >Название компании</label
+                    >
+                    <input
+                      :id="`company-${idx}`"
+                      v-model.trim="lastJobs![idx].company"
+                      :name="`company-${idx}`"
+                      class="field__input"
+                    />
+                  </div>
+                </div>
+                <div class="field">
+                  <label :for="`position-${idx}`" class="field__label"
+                    >Должность</label
+                  >
+                  <input
+                    :id="`position-${idx}`"
+                    v-model.trim="lastJobs![idx].position"
+                    :name="`position-${idx}`"
+                    class="field__input"
+                  />
+                </div>
+                <div class="field">
+                  <label :for="`functional-${idx}`" class="field__label"
+                    >Функционал</label
+                  >
+                  <input
+                    :id="`functional-${idx}`"
+                    v-model.trim="lastJobs![idx].functional"
+                    :name="`functional-${idx}`"
+                    class="field__input"
+                  />
+                </div>
+                <div v-if="idx !== 0">
+                  <button
+                    type="button"
+                    class="btn btn_sm btn_warning"
+                    :disabled="isSubmitting"
+                    @click="remove(idx)"
+                  >
+                    Удалить
+                  </button>
+                </div>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  :disabled="Boolean(lastJobs!.length > 15) || isSubmitting"
+                  class="btn btn_sm"
+                  @click="
+                    push({
+                      startDate: '',
+                      endDate: '',
+                      company: '',
+                      position: '',
+                      functional: '',
+                    })
+                  "
+                >
+                  Добавить
+                </button>
+              </div>
+            </FieldArray>
           </div>
 
           <div class="field">
@@ -942,7 +1109,7 @@ function createFormJson(rawValues: FormValues) {
 }
 
 .container {
-  max-width: 840px;
+  max-width: 1024px;
   padding: 2rem 4rem 6rem 4rem;
   margin: 0 auto;
   background: #ffffff;
@@ -992,9 +1159,9 @@ h1 {
 }
 
 .field_required label::after {
-  content: "*";
+  /* content: "*";
   color: #ff4444;
-  margin-left: 2px;
+  margin-left: 2px; */
 }
 
 .field_checkbox {
@@ -1005,11 +1172,12 @@ h1 {
 
 .field-card {
   padding: 1.5rem 1.5rem;
-  background-color: #eef3f8;
+  background-color: #ebf0f5;
 }
 
 .field__label {
   font-size: 0.9375rem;
+  font-weight: 400;
 }
 
 .field__input {
@@ -1185,6 +1353,7 @@ h1 {
 
   .w-1-3 {
     width: 100%;
+    min-width: 120px;
   }
 
   .field-group-h {
