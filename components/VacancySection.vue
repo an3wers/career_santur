@@ -4,12 +4,17 @@ const CAT_ID = 28;
 const PAGE = 1;
 const LIMIT_CONST = 3;
 const { apiBase } = useRuntimeConfig().public;
+
 const { data } = await useFetch<Record<string, any>>("apissz/GetPosts", {
   baseURL: apiBase,
   query: { page: PAGE, categoryId: CAT_ID, app: "santur" },
+  transform: ({ data }) => {
+    return { ...data, items: data.items.filter((item) => item.isPublished) };
+  },
 });
 
 const currentCity = ref<"ekb" | "tagil">("ekb");
+
 const limit = ref(LIMIT_CONST);
 
 const currentCityTransform = computed(() => {
@@ -19,8 +24,8 @@ const currentCityTransform = computed(() => {
 const filteredByCity = computed(() => {
   const resItems: any[] | undefined = [];
 
-  if (data.value && data.value?.data?.items?.length > 0) {
-    data.value.data.items.forEach((item: any) => {
+  if (data.value && data.value?.items?.length > 0) {
+    data.value.items.forEach((item: any) => {
       const foundFieldCity = item.extFields.find(
         (f: any) => f.title === "Город"
       );
@@ -41,10 +46,10 @@ const limitedData = computed(() => {
 });
 
 function toggleAll() {
-  if (limit.value === data.value?.data?.items?.length) {
+  if (limit.value === data.value?.items?.length) {
     limit.value = LIMIT_CONST;
   } else {
-    limit.value = data.value?.data?.items?.length;
+    limit.value = data.value?.items?.length;
   }
 }
 </script>
