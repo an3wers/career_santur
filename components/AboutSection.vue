@@ -8,7 +8,7 @@
       <h3 class="header__integers">О НАС В ЦИФРАХ</h3>
       <div class="block__integers">
         <div class="block__integers-item">
-          <p class="integers">28</p>
+          <p class="integers">30</p>
           <p class="integers__text">ЛЕТ НА РЫНКЕ</p>
         </div>
         <div class="block__integers-item">
