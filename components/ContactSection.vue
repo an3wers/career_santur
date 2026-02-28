@@ -263,13 +263,18 @@ const formHandler = handleSubmit(async (values, { resetForm }) => {
                 name="checkboxPolitics"
               />
               <div>
-                Соглашаюсь на обработку своих персональных данных в соответствии
-                <NuxtLink
-                  class="agree__link"
-                  to="https://santur.ru/politika"
+                Я даю согласие на
+                <nuxt-link
                   target="_blank"
-                  >с политикой
-                </NuxtLink>
+                  to="https://santur.ru/personal-information"
+                  >обработку моих персональных</nuxt-link
+                >
+                данных. С
+                <nuxt-link target="_blank" to="https://santur.ru/politika"
+                  >Положением в отношении обработки персональных
+                  данных</nuxt-link
+                >
+                ознакомлен(-а).
               </div>
             </label>
           </div>

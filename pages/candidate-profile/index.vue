@@ -57,7 +57,7 @@ const schema = computed(() =>
         .string()
         .required("Обязательное поле")
         .oneOf(["Собственное жилье", "Снимаю", "Другое"], "Обязательное поле"),
-      email: yup.string().email("Введите корректный email").trim(),
+      email: yup.string().email("Введите корректный адрес эл. почты").trim(),
       phone: yup.string().required("Обязательное поле").trim(),
       militaryDetail: yup.string().notRequired(),
       criminalDetail: hasCriminalRecord.value
@@ -77,7 +77,7 @@ const schema = computed(() =>
           jobtitle: yup.string().notRequired(),
           birthDate: yup.string().notRequired(),
           phone: yup.string().notRequired(),
-        })
+        }),
       ),
       lastJobs: yup.array().of(
         yup.object({
@@ -86,10 +86,10 @@ const schema = computed(() =>
           company: yup.string().notRequired(),
           position: yup.string().notRequired(),
           functional: yup.string().notRequired(),
-        })
+        }),
       ),
-    })
-  )
+    }),
+  ),
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -664,7 +664,7 @@ function createFormJson(rawValues: FormValues) {
               </div>
             </div>
             <div class="field">
-              <label class="field__label" for="email">Email</label>
+              <label class="field__label" for="email">Эл. почта</label>
               <input
                 id="email"
                 v-model.trim="email"
@@ -1187,7 +1187,9 @@ h1 {
   border: 1px solid #acacac;
   border-radius: 0.25rem;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
   max-height: 40px;
 }
 
@@ -1278,7 +1280,9 @@ h1 {
   border: none;
   border-radius: 0.25rem;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
 }
 
 .btn_sm {
